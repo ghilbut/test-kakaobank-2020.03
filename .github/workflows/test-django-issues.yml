@@ -32,7 +32,8 @@ jobs:
           sudo apt-get install -y python3-pip
           # install pipenv and packages
           pip3 install setuptools
-          pip3 install --user pipenv
+          pip3 install pipenv
+          sudo ln -s $(python3 -m site --user-base)/bin /usr/local/bin/pipenv
           pipenv install --system --deploy --clear
 
       - name: Run MySQL
