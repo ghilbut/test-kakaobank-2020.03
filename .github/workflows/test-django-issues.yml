@@ -75,8 +75,7 @@ jobs:
             -e SPPL_LOCAL_DB_HOST \
             --network mysql \
             --rm \
-            test \
-            --keepdb
+            test
         env:
           SPPL_LOCAL_DB_HOST: mysql
 
