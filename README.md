@@ -15,6 +15,10 @@ $ git clone https://github.com/ghilbut/seoul-public-parking-lot.git
 # WORKSPACE: ${repodir}/django
 
 # run MySQL with docker-compose on background
+$ mkdir -p db/mysql/init
+$ tee db/mysql/init.sql << EOF
+GRANT ALL PRIVILEGES ON test_spps.* TO 'spps'@'%';
+EOF
 $ docker-compose up -d
 
 # install packages

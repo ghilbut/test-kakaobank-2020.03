@@ -44,9 +44,9 @@ jobs:
           docker logs mysql
         env:
           MYSQL_ROOT_PASSWORD: rootpw
-          MYSQL_DATABASE: sppl
-          MYSQL_USER: sppl
-          MYSQL_PASSWORD: spplpw
+          MYSQL_DATABASE: spps
+          MYSQL_USER: spps
+          MYSQL_PASSWORD: sppspw
 
       - name: Build test docker image
         run:  |
