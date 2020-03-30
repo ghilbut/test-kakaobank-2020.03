@@ -32,6 +32,7 @@ jobs:
           mkdir -p docker/django/
           docker save -o docker/django/builder.tar builder
         working-directory: ${{ env.WORKDIR }}
+        if: always()
 
       - name: Upload builder docker image to artifact
         uses: actions/upload-artifact@v1
