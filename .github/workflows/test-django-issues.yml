@@ -55,19 +55,19 @@ jobs:
           docker build -t test --target=test .
         working-directory: ${{ env.WORKDIR }}
 
-      - name: Migrate database
-        run:  |
-          docker run \
-            -e SPPL_LOCAL_DB_HOST \
-            --name migration \
-            --network mysql \
-            --rm \
-            test \
-            sh -c \
-            "./manage.py makemigrations && \
-             ./manage.py migrate"
-        env:
-          SPPL_LOCAL_DB_HOST: mysql
+      #- name: Migrate database
+      #  run:  |
+      #    docker run \
+      #      -e SPPL_LOCAL_DB_HOST \
+      #      --name migration \
+      #      --network mysql \
+      #      --rm \
+      #      test \
+      #      sh -c \
+      #      "./manage.py makemigrations && \
+      #       ./manage.py migrate"
+      #  env:
+      #    SPPL_LOCAL_DB_HOST: mysql
 
       - name: Run test
         run:  |
@@ -79,7 +79,7 @@ jobs:
         env:
           SPPL_LOCAL_DB_HOST: mysql
 
-      - name: Clean
+      - name: Stop MySQL
         if:   always() && steps.mysql.outputs.result == 0
         run:  |
           docker stop mysql
