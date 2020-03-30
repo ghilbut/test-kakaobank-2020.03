@@ -18,7 +18,29 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build docker image for test
+      - name: Download builder docker image from artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: docker
+        working-directory: ${{ env.WORKDIR }}
+
+      - name: Build builder docker image
+        run:  |
+          if [ -f "docker/django/builder.tar" ]; then
+            docker -i docker/django/builder.tar
+          fi
+          docker build -t builder --target=builder .
+          mkdir -p docker/django/
+          docker save -o docker/django/builder.tar builder
+        working-directory: ${{ env.WORKDIR }}
+
+      - name: Upload builder docker image to artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: docker
+          path: docker/django/builder.tar
+
+      - name: Build test docker image
         run:  docker build -t test --target=test .
         working-directory: ${{ env.WORKDIR }}
 
@@ -33,6 +55,7 @@ jobs:
             -e MYSQL_PASSWORD \
             -v $(pwd)/db/mysql/data:/var/lib/mysql \
             -v $(pwd)/db/mysql/init:/docker-entrypoint-initdb.d \
+            --name mysql \
             --network mysql \
             --rm \
             mysql:5.7 \
