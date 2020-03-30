@@ -21,6 +21,10 @@ jobs:
       - name: Run MySQL
         id:   mysql
         run:  |
+          mkdir -p ./db/mysql/init
+          tee ./db/mysql/init/test.sql << EOF
+          GRANT ALL PRIVILEGES ON test_${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'%';
+          EOF
           docker network create mysql
           docker run \
             -d \
@@ -77,7 +81,7 @@ jobs:
           SPPL_LOCAL_DB_HOST: mysql
 
       - name: Clean
-        if:   steps.mysql.outputs.result == 0
+        if:   always() && steps.mysql.outputs.result == 0
         run:  |
           docker stop mysql
           docker network rm mysql

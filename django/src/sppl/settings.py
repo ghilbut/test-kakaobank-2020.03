@@ -89,9 +89,6 @@ DATABASES = {
         'USER': os.environ.get('SPPL_LOCAL_DB_USER', 'sppl'),
         'PASSWORD': os.environ.get('SPPL_LOCAL_DB_PASSWORD', 'spplpw'),
         'CONN_MAX_AGE': 60,
-        'TEST': {
-          'NAME': 'sppl',
-        },
     }
 }
 
