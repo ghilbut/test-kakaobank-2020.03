@@ -1,5 +1,5 @@
 """
-WSGI config for sppl project.
+WSGI config for spps project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sppl.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'spps.settings')
 
 application = get_wsgi_application()
