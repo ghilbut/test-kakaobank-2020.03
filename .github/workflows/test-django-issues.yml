@@ -18,11 +18,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build test docker image
-        run:  |
-          docker build -t test --target=test .
-        working-directory: ${{ env.WORKDIR }}
-
       - name: Run MySQL
         id:   mysql
         run:  |
@@ -48,6 +43,13 @@ jobs:
           MYSQL_DATABASE: sppl
           MYSQL_USER: sppl
           MYSQL_PASSWORD: spplpw
+
+      - name: Build test docker image
+        run:  |
+          docker ps -a
+          docker logs mysql
+          docker build -t test --target=test .
+        working-directory: ${{ env.WORKDIR }}
 
       - name: Migrate database
         run:  |
