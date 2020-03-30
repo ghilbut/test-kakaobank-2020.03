@@ -20,7 +20,8 @@ jobs:
 
       - name: Install python packages
         run: |
-          sudo apt install pipenv
+          sudo apt install python3-pip
+          python3 -m pip install --user pipenv
           pipenv install --system --deploy --clear
 
       - name: Run MySQL
