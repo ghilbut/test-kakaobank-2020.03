@@ -47,25 +47,26 @@ jobs:
 
       - name: Migrate database
         run: |
+          docker ps -a
           docker run \
-            -e BYFS_LOCAL_DB_HOST \
+            -e SPPL_LOCAL_DB_HOST \
             --network mysql \
             --rm \
             test \
             ./manage.py makemigrations && \
             ./manage.py migrate
         env:
-          BYFS_LOCAL_DB_HOST: mysql
+          SPPL_LOCAL_DB_HOST: mysql
 
       - name: Run test
         run: |
           docker run \
-            -e BYFS_LOCAL_DB_HOST \
+            -e SPPL_LOCAL_DB_HOST \
             --network mysql \
             --rm \
             test
         env:
-          BYFS_LOCAL_DB_HOST: mysql
+          SPPL_LOCAL_DB_HOST: mysql
 
       - name: Clean
         if: always()
