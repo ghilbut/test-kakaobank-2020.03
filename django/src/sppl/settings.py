@@ -83,11 +83,11 @@ WSGI_APPLICATION = 'sppl.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('SPPL_LOCAL_DB_NAME', 'sppl'),
-        'HOST': os.environ.get('SPPL_LOCAL_DB_HOST', '127.0.0.1'),
-        'PORT': os.environ.get('SPPL_LOCAL_DB_PORT', '3306'),
-        'USER': os.environ.get('SPPL_LOCAL_DB_USER', 'sppl'),
-        'PASSWORD': os.environ.get('SPPL_LOCAL_DB_PASSWORD', 'spplpw'),
+        'NAME': os.environ.get('SPPS_LOCAL_DB_NAME', 'sppl'),
+        'HOST': os.environ.get('SPPS_LOCAL_DB_HOST', '127.0.0.1'),
+        'PORT': os.environ.get('SPPS_LOCAL_DB_PORT', '3306'),
+        'USER': os.environ.get('SPPS_LOCAL_DB_USER', 'sppl'),
+        'PASSWORD': os.environ.get('SPPS_LOCAL_DB_PASSWORD', 'spplpw'),
         'CONN_MAX_AGE': 60,
     }
 }

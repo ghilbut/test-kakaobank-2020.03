@@ -58,12 +58,12 @@ jobs:
       - name: Run test
         run:  |
           docker run \
-            -e SPPL_LOCAL_DB_HOST \
+            -e SPPS_LOCAL_DB_HOST \
             --network mysql \
             --rm \
             test
         env:
-          SPPL_LOCAL_DB_HOST: mysql
+          SPPS_LOCAL_DB_HOST: mysql
 
       - name: Stop MySQL
         if:   always() && steps.mysql.outputs.result == 0
