@@ -1,0 +1,22 @@
+version: '3.7'
+networks:
+  sppl:
+services:
+  mysql:
+    container_name: mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-rootpw}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-sppl}
+      - MYSQL_USER=${MYSQL_USER:-sppl}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-spplpw}
+    image: mysql:5.7
+    networks:
+      - sppl
+    ports:
+      - 3306:3306
+      - 33060:33060
+    restart: always
+    volumes:
+      - ./db/mysql/data:/var/lib/mysql
+      - ./db/mysql/init:/docker-entrypoint-initdb.d

@@ -1,0 +1,72 @@
+name: Test django on Issue branch
+
+on:
+  push:
+    branches:
+      - Issue-*
+    paths:
+      - .github/workflows/test-django-issues.yml
+      - django/Pipfile.lock
+      - django/src/**
+
+jobs:
+  test:
+    runs-on: ubuntu-18.04
+    env:
+      WORKDIR: ./django
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Run MySQL
+        id:   mysql
+        run:  |
+          mkdir -p ./db/mysql/init
+          tee ./db/mysql/init/test.sql << EOF
+          GRANT ALL PRIVILEGES ON test_${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'%';
+          EOF
+          docker network create mysql
+          docker run \
+            -d \
+            -e MYSQL_ROOT_PASSWORD \
+            -e MYSQL_DATABASE \
+            -e MYSQL_USER \
+            -e MYSQL_PASSWORD \
+            -v $(pwd)/db/mysql/data:/var/lib/mysql \
+            -v $(pwd)/db/mysql/init:/docker-entrypoint-initdb.d \
+            --name mysql \
+            --network mysql \
+            --rm \
+            mysql:5.7 \
+            --character-set-server=utf8mb4 \
+            --collation-server=utf8mb4_unicode_ci
+          echo ::set-output name=result::$(echo $?)
+          docker logs mysql
+        env:
+          MYSQL_ROOT_PASSWORD: rootpw
+          MYSQL_DATABASE: sppl
+          MYSQL_USER: sppl
+          MYSQL_PASSWORD: spplpw
+
+      - name: Build test docker image
+        run:  |
+          docker ps -a
+          docker logs mysql
+          docker build -t test --target=test .
+        working-directory: ${{ env.WORKDIR }}
+
+      - name: Run test
+        run:  |
+          docker run \
+            -e SPPL_LOCAL_DB_HOST \
+            --network mysql \
+            --rm \
+            test
+        env:
+          SPPL_LOCAL_DB_HOST: mysql
+
+      - name: Stop MySQL
+        if:   always() && steps.mysql.outputs.result == 0
+        run:  |
+          docker stop mysql
+          docker network rm mysql
