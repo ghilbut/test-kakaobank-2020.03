@@ -1,0 +1,36 @@
+name: Test django on Issue branch
+
+on:
+  push:
+    branches:
+      - Issue-*
+    paths:
+      - .github/workflows/test-django-issues.yml
+      - django/Pipfile.lock
+      - django/src/**
+
+jobs:
+  test:
+    runs-on: ubuntu-18.04
+    env:
+      WORKDIR: ./django
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Initialize test environment
+        id: docker
+        run: |
+          docker-compose up -d
+          pipenv install --system --deploy --clear
+        working-directory: ${{ env.WORKDIR }}
+
+      - name: Run test
+        run: |
+          ./src/manage.py test
+        working-directory: ${{ env.WORKDIR }}
+
+      - name: Clean
+        if: always()
+        run: |
+          docker-compose down

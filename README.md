@@ -23,8 +23,15 @@ $ pipenv install
 # initialize database
 $ pipenv run ./src/manage.py makemigrations
 $ pipenv run ./src/manage.py migrate
+
+# create superuser name and password
 $ pipenv run ./src/manage.py createsuperuser
-$ pipenv run src/manage.py runserver 0:8000
+
+# run unit test
+$ pipenv run ./src/manage.py test
+
+# run local development server
+$ pipenv run ./src/manage.py runserver 0:8000
 ```
 
 Check on http://localhost:8000
