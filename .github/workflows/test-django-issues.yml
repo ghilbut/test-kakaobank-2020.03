@@ -18,44 +18,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Download builder docker image from artifact
-        uses: actions/download-artifact@v1
-        with:
-          name: docker
-
-      - name: Build builder docker image
-        run:  |
-          if [ -f "docker/django/builder.tar" ]; then
-            docker -i docker/django/builder.tar
-          fi
-          docker build -t builder --target=builder .
-          mkdir -p docker/django/
-          docker save -o docker/django/builder.tar builder
-        working-directory: ${{ env.WORKDIR }}
-        if: always()
-
-      - name: Upload builder docker image to artifact
-        uses: actions/upload-artifact@v1
-        with:
-          name: docker
-          path: docker/django/builder.tar
-
       - name: Build test docker image
-        run: |
-          if [ -f "docker/django/test.tar" ]; then
-            docker -i docker/django/test.tar
-          fi
-          docker build -t test --target=test .
-          docker save -o docker/django/test.tar test
+        run:  docker build -t test --target=test .
         working-directory: ${{ env.WORKDIR }}
-
-      - name: Upload test docker image to artifact
-        uses: actions/upload-artifact@v1
-        with:
-          name: docker
-          path: docker/django/test.tar
 
       - name: Run MySQL
+        id:   mysql
         run: |
           docker network create mysql
           docker run \
@@ -73,6 +41,7 @@ jobs:
             mysql \
             --character-set-server=utf8mb4 \
             --collation-server=utf8mb4_unicode_ci
+          echo ::set-output name=result::$?
         env:
           MYSQL_ROOT_PASSWORD: rootpw
           MYSQL_DATABASE: sppl
@@ -103,7 +72,7 @@ jobs:
           SPPL_LOCAL_DB_HOST: mysql
 
       - name: Clean
-        if: always()
+        if: steps.mysql.outputs.result == 0
         run: |
           docker stop mysql
           docker network rm mysql
