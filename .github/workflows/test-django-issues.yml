@@ -51,6 +51,7 @@ jobs:
       - name: Migrate database
         run: |
           docker ps -a
+          docker logs mysql
           docker run \
             -e SPPL_LOCAL_DB_HOST \
             --network mysql \
