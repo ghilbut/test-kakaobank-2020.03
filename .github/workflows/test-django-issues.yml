@@ -31,6 +31,7 @@ jobs:
           # install pip3
           sudo apt-get install -y python3-pip
           # install pipenv and packages
+          python3 -m pip install setuptools
           python3 -m pip install --user pipenv
           pipenv install --system --deploy --clear
 
