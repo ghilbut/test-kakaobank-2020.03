@@ -36,7 +36,7 @@ jobs:
             mysql:5.7 \
             --character-set-server=utf8mb4 \
             --collation-server=utf8mb4_unicode_ci
-          echo ::set-output name=result::$?
+          echo ::set-output name=result::$(echo $?)
           docker logs mysql
         env:
           MYSQL_ROOT_PASSWORD: rootpw
@@ -55,11 +55,13 @@ jobs:
         run:  |
           docker run \
             -e SPPL_LOCAL_DB_HOST \
+            --name migration \
             --network mysql \
             --rm \
             test \
-            ./manage.py makemigrations && \
-            ./manage.py migrate
+            sh -c \
+            "./manage.py makemigrations && \
+             ./manage.py migrate"
         env:
           SPPL_LOCAL_DB_HOST: mysql
 
