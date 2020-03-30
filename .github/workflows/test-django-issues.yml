@@ -41,8 +41,19 @@ jobs:
           path: docker/django/builder.tar
 
       - name: Build test docker image
-        run:  docker build -t test --target=test .
+        run: |
+          if [ -f "docker/django/test.tar" ]; then
+            docker -i docker/django/test.tar
+          fi
+          docker build -t test --target=test .
+          docker save -o docker/django/test.tar test
         working-directory: ${{ env.WORKDIR }}
+
+      - name: Upload test docker image to artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: docker
+          path: docker/django/test.tar
 
       - name: Run MySQL
         run: |
