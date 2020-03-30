@@ -33,7 +33,6 @@ jobs:
             --name mysql \
             --network mysql \
             --restart unless-stopped \
-            --rm \
             mysql:5.7 \
             mysql \
             --character-set-server=utf8mb4 \
