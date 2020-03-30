@@ -22,7 +22,6 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: docker
-        working-directory: ${{ env.WORKDIR }}
 
       - name: Build builder docker image
         run:  |
