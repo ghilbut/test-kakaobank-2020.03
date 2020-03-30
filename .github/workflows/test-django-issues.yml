@@ -32,9 +32,8 @@ jobs:
             -v $(pwd)/db/mysql/init:/docker-entrypoint-initdb.d \
             --name mysql \
             --network mysql \
-            --restart unless-stopped \
+            --rm \
             mysql:5.7 \
-            mysql \
             --character-set-server=utf8mb4 \
             --collation-server=utf8mb4_unicode_ci
           echo ::set-output name=result::$?
