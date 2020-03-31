@@ -54,13 +54,14 @@ def _assert_result(result: dict) -> None:
   assert c == 'INFO-000', f'[CODE: {c}] {m}'
 
 
-def _update_parking_lot(input: list, version: int) -> None:
-  code_list = [item['PARKING_CODE'] for item in input]
+def _update_parking_lot(parking_lots: list, version: int) -> None:
+  code_list = {item['PARKING_CODE'] for item in parking_lots}
+  code_list = list(code_list)
 
   rows = ParkingLot.objects.filter(code__in=code_list)
   rows = {row.code:row for row in rows}
 
-  for item in input:
+  for item in parking_lots:
     code = int(item['PARKING_CODE'])
     json_string = json.dumps(item, ensure_ascii=False)
     crc32 = binascii.crc32(json_string.encode('utf8'))
@@ -68,19 +69,22 @@ def _update_parking_lot(input: list, version: int) -> None:
     try:
       row = rows[code]
       update = (row.crc32 != crc32)
+      update_fields = ['version']
     except KeyError:
-      row = ParkingLot()
+      row = ParkingLot(code=code)
       update = True
+      update_fields = None
 
     if update:
-      row.code = code
       row.name = item['PARKING_NAME']
       row.address = item['ADDR']
       row.phone_num = _regulate_phone_number(item['TEL'])
       row.json_string = json_string
       row.crc32 = crc32
+      if update_fields != None:
+        update_fields += ['name', 'address', 'phone_num', 'json_string', 'crc32']
     row.version = version
-    row.save()
+    row.save(update_fields=update_fields)
 
 
 def _regulate_phone_number(tel: str) -> str:

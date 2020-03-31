@@ -131,3 +131,36 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+################################################################
+##
+##  Logging
+##
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'db': {
+            'format': u"%(asctime)s [%(levelname)s] [QUERY] %(message)s",
+            'datefmt': "%Y-%m-%d %H:%M:%S",
+        },
+    },
+    'handlers': {
+        'db': {
+            'class': 'logging.StreamHandler',
+            'level': 'DEBUG',
+            'formatter': 'db',
+        },
+    },
+    'loggers': {
+        'django.db.backends': {
+            'handlers': [
+                'db',
+            ],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
