@@ -13,7 +13,7 @@ class Command(BaseCommand):
   def handle(self, *args, **options):
     key = os.environ['OPEN_API_KEY']
 
-    steps = 10  # 1000
+    steps = 100  # 1000
     begin = 1
     end   = steps
 
@@ -33,7 +33,7 @@ class Command(BaseCommand):
       row   = obj['GetParkInfo']['row']
       end   = begin + len(row) - 1
 
-      _update_table(row, version)
+      _update_parking_lot(row, version)
 
       break  # temp for test
 
@@ -44,7 +44,8 @@ class Command(BaseCommand):
       end   = min(total, end + steps)
 
     n = ParkingLot.objects.exclude(version=version).delete()
-    print(f'ParkingLot: {n[1]["service.ParkingLot"]} rows are deleted')
+    n = n[1].get('service.ParkingLot', 0)
+    print(f'ParkingLot: {n} rows are deleted')
 
 
 def _assert_result(result: dict) -> None:
@@ -53,7 +54,7 @@ def _assert_result(result: dict) -> None:
   assert c == 'INFO-000', f'[CODE: {c}] {m}'
 
 
-def _update_table(input: list, version: int) -> None:
+def _update_parking_lot(input: list, version: int) -> None:
   code_list = [item['PARKING_CODE'] for item in input]
 
   rows = ParkingLot.objects.filter(code__in=code_list)
@@ -75,8 +76,23 @@ def _update_table(input: list, version: int) -> None:
       row.code = code
       row.name = item['PARKING_NAME']
       row.address = item['ADDR']
-      row.phone_num = item['TEL']
+      row.phone_num = _regulate_phone_number(item['TEL'])
       row.json_string = json_string
       row.crc32 = crc32
     row.version = version
     row.save()
+
+
+def _regulate_phone_number(tel: str) -> str:
+  assert isinstance(tel, str)
+
+  tel = tel.strip().replace(')', '-')
+  if '~' in tel:
+    p = tel[:-3]
+    b = int(tel[-3:-2])
+    e = int(tel[-1:])
+    tel = {f'{p}{n}' for n in range(b, e+1)}
+  else:
+    tel = [tel]
+
+  return ','.join(tel)
