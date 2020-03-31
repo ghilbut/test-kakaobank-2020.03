@@ -11,6 +11,8 @@ $ git clone https://github.com/ghilbut/seoul-public-parking-lot-service.git
 
 ### Django
 
+#### 개발환경
+
 ```bash
 # WORKSPACE: ${repodir}/django
 
@@ -21,8 +23,11 @@ GRANT ALL PRIVILEGES ON test_spps.* TO 'spps'@'%';
 EOF
 $ docker-compose up -d
 
-# install packages
-$ pipenv install
+# initialize pipenv environment
+$ pipenv install --dev
+$ tee .env << EOF
+OPEN_API_KEY=********  #서울시 OpenAPI 인증키
+EOF
 
 # initialize database
 $ pipenv run ./src/manage.py makemigrations
@@ -36,6 +41,15 @@ $ pipenv run ./src/manage.py test
 
 # run local development server
 $ pipenv run ./src/manage.py runserver 0:8000
+```
+
+#### 공영주차장 데이터 수집
+
+```bash
+# WORKSPACE: ${repodir}/django
+
+# create or update data
+$ pipenv run ./src/manage.py crawling
 ```
 
 Check on http://localhost:8000  
