@@ -10,13 +10,16 @@ class ParkingLotSerializer(Serializer):
   def to_representation(self, value):
     return json.loads(value.json_string)
 
+class ParkingLotPagination(LimitOffsetPagination):
+  default_limit = 20
+  max_limit = 1000
+
 
 class ParkingLotViewSet(ReadOnlyModelViewSet):
   queryset = ParkingLot.objects.all()
   lookup_field = 'code'
   serializer_class = ParkingLotSerializer
-  pagination_class = LimitOffsetPagination
-  page_size = 10
+  pagination_class = ParkingLotPagination
 
 
 router = DefaultRouter()
