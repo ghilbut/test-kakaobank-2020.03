@@ -1,29 +1,35 @@
 import Vue from "vue";
 import Vuex from "vuex";
 
+
+const PageSize: number = 10;
+const PageVisible: number = 7;
+
+
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
     count: 0,
-    prev: null,
-    next: null,
     list: [],
-    page: 1
+    page_count: 0,
+    page_visible: PageVisible
   },
   mutations: {
-    reset (state, { count, next, previous, results }) {
-      console.log(count, next, previous, results);
+    reset (state, { count, results }) {
       state.count = count;
-      state.prev = previous;
-      state.next = next;
       state.list = results;
+      state.page_count = Math.floor((count + PageSize - 1) / PageSize);
     }
   },
   actions: {
-    async reset ({ commit }) {
+    async reset ({ commit }, { page }) {
       try {
-        const uri = `${process.env.VUE_APP_DJANGO_URI}/parking_lots/`;
+        let uri = `${process.env.VUE_APP_DJANGO_URI}/parking_lots/?size=${PageSize}`;
+        if (page > 1) {
+          uri = `${uri}&page=${page}`;
+        }
+
         const res = await fetch(uri);
         commit('reset', await res.json());
       } catch (e) {
