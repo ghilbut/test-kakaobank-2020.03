@@ -1,6 +1,6 @@
 import json
 from django.db.models import Q
-from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.routers import DefaultRouter
 from rest_framework.serializers import Serializer
 from rest_framework.viewsets import ReadOnlyModelViewSet
@@ -12,9 +12,10 @@ class ParkingLotSerializer(Serializer):
     return json.loads(value.json_string)
 
 
-class ParkingLotPagination(LimitOffsetPagination):
-  default_limit = 20
-  max_limit = 1000
+class ParkingLotPagination(PageNumberPagination):
+  page_size = 20
+  page_size_query_param = 'size'
+  max_page_size = 1000
 
 
 class ParkingLotViewSet(ReadOnlyModelViewSet):
