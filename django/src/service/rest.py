@@ -10,6 +10,7 @@ class ParkingLotSerializer(Serializer):
   def to_representation(self, value):
     return json.loads(value.json_string)
 
+
 class ParkingLotPagination(LimitOffsetPagination):
   default_limit = 20
   max_limit = 1000
