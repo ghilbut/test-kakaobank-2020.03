@@ -12,7 +12,6 @@ $ git clone https://github.com/ghilbut/seoul-public-parking-lot-service.git
 
 ### A1. Django
 
-
 #### 개발환경
 
 ```bash
@@ -45,7 +44,6 @@ $ pipenv run ./src/manage.py test
 $ pipenv run ./src/manage.py runserver 0:8000
 ```
 
-
 #### 공영주차장 데이터 수집
 
 ```bash
@@ -54,7 +52,6 @@ $ pipenv run ./src/manage.py runserver 0:8000
 # create or update data
 $ pipenv run ./src/manage.py crawling
 ```
-
 
 #### 결과페이지
 
@@ -71,10 +68,18 @@ $ pipenv run ./src/manage.py crawling
 
 ### A2. Vue.js
 
+#### 개발환경
+
+```bash
+# WORKSPACE: ${repodir}/vue.js
+
+$ yarn install
+$ yarn serve
+```
 
 #### 결과페이지
 
-- http://localhost:8080/
+http://localhost:8080/
 
 
 ## B. Production Environment
@@ -82,8 +87,7 @@ $ pipenv run ./src/manage.py crawling
 
 ### B1. Terraform
 
-
-#### Create AWS IAM User
+#### AWS IAM User 생성
 
 [Step1] Add User
 
@@ -129,22 +133,21 @@ aws_access_key_id=********
 aws_secret_access_key=********
 ```
 
+#### Terraform 상태 저장소 생성 (AWS S3 Bucket)
 
-#### Create AWS S3 Bucket for terraform state
-
-[Step1] Create bucket with default options
+[Step1] 기본 설정으로 Bucket 생성
 
 - Name: seoul-public-parking-lot-service-terraform-state
 - Region: Asia Pacific (Seoul) ap-northeast-2
 
-[Step2] Set tags
+[Step2] 태그 설정
 
 - Name: seoul-public-parking-lot-service-terraform-state
 - owner: devops
 - purpose: terraform state repository
 
 
-#### Apply
+#### Terraform 적용
 
 ```bash
 # WORKSPACE: ${repodir}/terraform
@@ -160,8 +163,7 @@ $ terraform init
 $ terraform apply
 ```
 
-
-#### Destroy (if you want)
+#### (환경삭제)
 
 ```bash
 # WORKSPACE: ${repodir}/terraform
@@ -175,6 +177,9 @@ $ terraform destroy
 
 ### B3. Vue.js
 
+
+#### 수동설치
+
 ```bash
 # WORKSPACE: ${repodir}/vue.js
 
@@ -182,3 +187,7 @@ $ yarn install
 $ yarn build --force
 $ aws --profile spps s3 sync --acl public-read ./dist s3://spps.ghilbut.net
 ```
+
+#### 결과페이지
+
+https://spps.ghilbut.net/
