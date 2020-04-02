@@ -85,23 +85,23 @@ $ pipenv run ./src/manage.py crawling
 
 #### Create AWS IAM User
 
-**[Step1] Add User**
+[Step1] Add User
 
 - User name: spps
 - Access type: [x] Programmatic access / [ ] AWS Management Console access
 
-**[Step2] Add tags**
+[Step2] Add tags
 
 - Name: spps
 - owner: devops
 - purpose: terraform user for production stage
 
-**[Step3] Save secrets**
+[Step3] Save secrets
 
 - Access key ID
 - Secret access key
 
-**[Step4] Add inline policy**
+[Step4] Add inline policy
 
 - Policy name: all
 - Policy value:
@@ -118,7 +118,7 @@ $ pipenv run ./src/manage.py crawling
   }
   ```
 
-**[Step5] Register credentials**
+[Step5] Register credentials
 
 ```bash
 $ vi ~/.aws/credentials
@@ -132,12 +132,12 @@ aws_secret_access_key=********
 
 #### Create AWS S3 Bucket for terraform state
 
-**[Step1] Create bucket with default options**
+[Step1] Create bucket with default options
 
 - Name: seoul-public-parking-lot-service-terraform-state
 - Region: Asia Pacific (Seoul) ap-northeast-2
 
-**[Step2] Set tags**
+[Step2] Set tags
 
 - Name: seoul-public-parking-lot-service-terraform-state
 - owner: devops
