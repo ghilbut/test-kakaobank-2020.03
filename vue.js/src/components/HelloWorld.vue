@@ -33,7 +33,11 @@ import { mapState } from 'vuex';
 
 
 @Component({
-  computed: mapState(['count', 'list', 'page_count'])
+  computed: mapState([
+    'count',
+    'list',
+    'page_count'
+  ])
 })
 export default class HelloWorld extends Vue {
 

@@ -19,7 +19,7 @@ export default new Vuex.Store({
     }
   },
   actions: {
-    async reset({ commit, state }, { keyword, page }) {
+    async reset({ commit }, { keyword, page }) {
       try {
         let uri = `${process.env.VUE_APP_DJANGO_URI}/parking_lots/?size=${PageSize}`;
         if (page > 1) {
