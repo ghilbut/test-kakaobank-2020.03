@@ -12,6 +12,7 @@ $ git clone https://github.com/ghilbut/seoul-public-parking-lot-service.git
 
 ### A1. Django
 
+
 #### 개발환경
 
 ```bash
@@ -44,6 +45,7 @@ $ pipenv run ./src/manage.py test
 $ pipenv run ./src/manage.py runserver 0:8000
 ```
 
+
 #### 공영주차장 데이터 수집
 
 ```bash
@@ -52,6 +54,7 @@ $ pipenv run ./src/manage.py runserver 0:8000
 # create or update data
 $ pipenv run ./src/manage.py crawling
 ```
+
 
 #### 결과페이지
 
@@ -68,10 +71,10 @@ $ pipenv run ./src/manage.py crawling
 
 ### A2. Vue.js
 
+
 #### 결과페이지
 
 - http://localhost:8080/
-
 
 
 ## B. Production Environment
@@ -82,8 +85,63 @@ $ pipenv run ./src/manage.py crawling
 
 #### Create AWS IAM User
 
+**[Step1] Add User**
+
+- User name: spps
+- Access type: [x] Programmatic access / [ ] AWS Management Console access
+
+**[Step2] Add tags**
+
+- Name: spps
+- owner: devops
+- purpose: terraform user for production stage
+
+**[Step3] Save secrets**
+
+- Access key ID
+- Secret access key
+
+**[Step4] Add inline policy**
+
+- Policy name: all
+- Policy value:
+  ```json
+  {
+      "Version": "2012-10-17",
+      "Statement": [
+          {
+              "Effect": "Allow",
+              "Action": "*",
+              "Resource": "*"
+          }
+      ]
+  }
+  ```
+
+**[Step5] Register credentials**
+
+```bash
+$ vi ~/.aws/credentials
+...
+
+[spps]
+aws_access_key_id=********
+aws_secret_access_key=********
+```
+
 
 #### Create AWS S3 Bucket for terraform state
+
+**[Step1] Create bucket with default options**
+
+- Name: seoul-public-parking-lot-service-terraform-state
+- Region: Asia Pacific (Seoul) ap-northeast-2
+
+**[Step2] Set tags
+
+- Name: seoul-public-parking-lot-service-terraform-state
+- owner: devops
+- purpose: terraform state repository
 
 
 #### Apply
@@ -100,6 +158,15 @@ $ terraform init
 # - TF_VAR_srv_name    (default: spps)
 # - TF_VAR_domain_name (default: ghilbut.net)
 $ terraform apply
+```
+
+
+#### Destroy (if you want)
+
+```bash
+# WORKSPACE: ${repodir}/terraform
+
+$ terraform destroy
 ```
 
 
