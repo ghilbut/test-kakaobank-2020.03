@@ -19,9 +19,17 @@ export default class Paginator extends Vue {
   page: number = 1
   pageVisible: number = 7;
 
+  mounted() {
+    this.$on('reset', this.reset);
+  }
+
+  reset() {
+    this.page = 1;
+  }
+
   @Watch('page')
   onSeleced() {
-    this.$store.dispatch('list', { page: this.page });
+    this.$emit('page-changed', this.page);
   }
 }
 </script>

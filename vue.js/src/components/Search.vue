@@ -21,14 +21,11 @@ export default class Search extends Vue {
   keyword: string = '';
 
   onSearch() {
-    console.log('CHANGED: ', this.keyword);
-    this.$store.dispatch('setKeyword', { keyword: this.keyword });
-    this.$store.dispatch('list', { page: this.page });
+    this.$emit('keyword-changed', this.keyword || '');
   }
 
   onClear() {
-    this.$store.dispatch('setKeyword', { keyword: '' });
-    this.$store.dispatch('list', { page: this.page });
+    this.$emit('keyword-changed', '');
   }
 }
 </script>

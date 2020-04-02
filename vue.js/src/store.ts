@@ -7,40 +7,33 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    keyword: "",
     count: 0,
     list: [],
     page_count: 0
   },
   mutations: {
-    setKeyword(state, { keyword }) {
-      state.keyword = keyword || '';
-    },
-    resetList(state, { count, results }) {
+    reset(state, { count, results }) {
       state.count = count;
       state.list = results;
       state.page_count = Math.floor((count + PageSize - 1) / PageSize);
     }
   },
   actions: {
-    async list({ commit, state }, { page }) {
+    async reset({ commit, state }, { keyword, page }) {
       try {
         let uri = `${process.env.VUE_APP_DJANGO_URI}/parking_lots/?size=${PageSize}`;
         if (page > 1) {
           uri = `${uri}&page=${page}`;
         }
-        if (state.keyword) {
-          uri = `${uri}&q=${state.keyword}`;
+        if (keyword) {
+          uri = `${uri}&q=${keyword}`;
         }
 
         const res = await fetch(uri);
-        commit('resetList', await res.json());
+        commit('reset', await res.json());
       } catch (e) {
-        alert('Vuex list failed');
+        alert('Vuex reset failed');
       }
-    },
-    async setKeyword({ commit }, { keyword }) {
-      commit('setKeyword', { keyword });
-    },
+    }
   }
 });

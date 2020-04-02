@@ -44,7 +44,7 @@ export default class HelloWorld extends Vue {
   ];
 
   mounted() {
-    this.$store.dispatch('list', { page: 1 });
+    this.$store.dispatch('reset', { keyword: '', page: 1 });
   }
 }
 </script>
