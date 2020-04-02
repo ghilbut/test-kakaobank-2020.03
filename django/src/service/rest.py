@@ -1,8 +1,21 @@
 import json
 from django.db.models import Q
+from django.utils.decorators import method_decorator
+from drf_yasg.openapi import (
+  IN_PATH,
+  IN_QUERY,
+  Parameter,
+  TYPE_INTEGER,
+  TYPE_STRING,
+)
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.routers import DefaultRouter
-from rest_framework.serializers import Serializer
+from rest_framework.serializers import (
+  CharField,
+  Serializer,
+)
+from rest_framework.status import HTTP_404_NOT_FOUND
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from .models import ParkingLot
 
@@ -12,16 +25,54 @@ class ParkingLotSerializer(Serializer):
     return json.loads(value.json_string)
 
 
+class ErrorSerializer(Serializer):
+  detail = CharField()
+
+
 class ParkingLotPagination(PageNumberPagination):
   page_size = 20
+  page_query_description = '조회하려는 페이지의 숫자'
   page_size_query_param = 'size'
+  page_size_query_description = '하나의 페이지에 들어가는 공용주차장의 갯수'
   max_page_size = 1000
 
 
+@method_decorator(
+  name = 'list',
+  decorator = swagger_auto_schema(
+    manual_parameters = [
+      Parameter(
+        'q', IN_QUERY,
+        description = '검색을 위한 키워드 (주차장 이름과 주소, 전화번호가 대상이다)',
+        required = False,
+        type = TYPE_STRING,
+      ),
+    ],
+    operation_summary = '서울시 공용주차장들의 목록을 검색한다.',
+    responses = {
+      HTTP_404_NOT_FOUND: ErrorSerializer('Invalid Page.'),
+    },
+  )
+)
+@method_decorator(
+  name = 'retrieve',
+  decorator = swagger_auto_schema(
+    manual_parameters = [
+      Parameter(
+        'code', IN_PATH,
+        description = '조회하려는 공용주차장의 코드',
+        required = True,
+        type = TYPE_INTEGER,
+      ),
+    ],
+    operation_id = 'parking_lots_retrieve',
+    operation_summary = '선택한 서울시 공용주차장의 상세 정보를 제공한다.',
+    responses = {
+      HTTP_404_NOT_FOUND: ErrorSerializer('Not found.'),
+    },
+  )
+)
 class ParkingLotViewSet(ReadOnlyModelViewSet):
-  """
-  서울시 공용주차장 정보를 바탕으로 주차 가능한 주차장 목록을 제공한다. 
-  """
   queryset = ParkingLot.objects.all()
   lookup_field = 'code'
   serializer_class = ParkingLotSerializer
@@ -37,57 +88,6 @@ class ParkingLotViewSet(ReadOnlyModelViewSet):
     q.add(Q(phone_num__contains=key), q.OR)
     q.add(Q(name__contains=key),      q.OR)
     return self.queryset.filter(q)
-
-  def list(self, request):
-    """
-    서울시 공용주차장들의 목록을 제공한다.
-    ---
-    # YAML
-
-    type:
-      name:
-        required: true
-        type: string
-      url:
-        required: false
-        type: url
-      created_at:
-        required: true
-        type: string
-        format: date-time
-
-    serializer: .ParkingLotSerializer
-    omit_serializer: false
-    many: true
-
-    parameters_strategy: merge
-    omit_parameters:
-        - path
-
-    parameters:
-      - name: size
-        paramType: query
-        description: "요청에서 제공하는 최대 공용주차장 정보의 수"
-        required: false
-        type: integer
-      - name: page
-        paramType: query
-        description: "요청할 페이지 번호"
-        required: false
-        type: integer
-      - name: q
-        paramType: query
-        description: "검색할 키워드 - 주차장 이름과 주소, 전화번호를 대상으로 한다"
-        required: false
-        type: string
-    """
-    return super().list(self, request)
-
-  def retrieve(self, request, code):
-    """
-    # 서울시 공용주차장의 상세 정보를 제공한다.
-    """
-    return super().retrieve(self, request, code)
 
 
 router = DefaultRouter()
