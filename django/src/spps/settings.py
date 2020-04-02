@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'service',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -191,3 +192,13 @@ REST_FRAMEWORK = {
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_METHODS = ['GET', 'OPTIONS']
+
+
+################################################################
+##
+##  drf-yasg
+##
+
+SWAGGER_SETTINGS = {
+  'SECURITY_DEFINITIONS': None,
+}
