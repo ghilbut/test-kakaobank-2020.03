@@ -174,3 +174,11 @@ $ terraform destroy
 
 
 ### B3. Vue.js
+
+```bash
+# WORKSPACE: ${repodir}/vue.js
+
+$ yarn install
+$ yarn build --force
+$ aws --profile spps s3 sync --acl public-read ./dist s3://spps.ghilbut.net
+```
