@@ -80,6 +80,29 @@ $ pipenv run ./src/manage.py crawling
 ### B1. Terraform
 
 
+#### Create AWS IAM User
+
+
+#### Create AWS S3 Bucket for terraform state
+
+
+#### Apply
+
+```bash
+# WORKSPACE: ${repodir}/terraform
+
+# initialize
+$ terraform init
+
+# environment variables
+# - TF_VAR_aws_region  (default: ap-northeast-2)
+# - TF_VAR_aws_profile (default: spps)
+# - TF_VAR_srv_name    (default: spps)
+# - TF_VAR_domain_name (default: ghilbut.net)
+$ terraform apply
+```
+
+
 ### B2. Django
 
 
