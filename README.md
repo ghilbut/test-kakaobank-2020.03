@@ -3,14 +3,14 @@
 
 
 
-## Local Environment
+## A. Local Environment
 
 ```bash
 $ git clone https://github.com/ghilbut/seoul-public-parking-lot-service.git
 ```
 
 
-### Django
+### A1. Django
 
 #### 개발환경
 
@@ -66,7 +66,7 @@ $ pipenv run ./src/manage.py crawling
   - Redoc: http://localhost:8000/redoc/
 
 
-### Vue.js
+### A2. Vue.js
 
 #### 결과페이지
 
@@ -74,13 +74,13 @@ $ pipenv run ./src/manage.py crawling
 
 
 
-## Production Environment
+## B. Production Environment
 
 
-### Terraform
+### B1. Terraform
 
 
-### Django
+### B2. Django
 
 
-### Vue.js
+### B3. Vue.js
