@@ -137,7 +137,7 @@ aws_secret_access_key=********
 - Name: seoul-public-parking-lot-service-terraform-state
 - Region: Asia Pacific (Seoul) ap-northeast-2
 
-**[Step2] Set tags
+**[Step2] Set tags**
 
 - Name: seoul-public-parking-lot-service-terraform-state
 - owner: devops
