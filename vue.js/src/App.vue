@@ -1,52 +1,59 @@
 <template>
   <v-app>
     <v-app-bar app color="primary" dark>
-      <div class="d-flex align-center">
-        <v-img
-          alt="Vuetify Logo"
-          class="shrink mr-2"
-          contain
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
-          transition="scale-transition"
-          width="40"
-        />
-
-        <v-img
-          alt="Vuetify Name"
-          class="shrink mt-1 hidden-sm-and-down"
-          contain
-          min-width="100"
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png"
-          width="100"
-        />
-      </div>
 
       <v-spacer></v-spacer>
+        <Search ref="search" @keyword-changed="onKeyword" />
+      <v-spacer></v-spacer>
 
-      <v-btn
-        href="https://github.com/vuetifyjs/vuetify/releases/latest"
-        target="_blank"
-        text
-      >
-        <span class="mr-2">Latest Release</span>
-        <v-icon>open_in_new</v-icon>
-      </v-btn>
     </v-app-bar>
 
     <v-content>
       <router-view />
     </v-content>
+
+    <v-footer class="font-weight-medium" app>
+      <v-col class="text-center" cols="12">
+        <Paginator ref="page" @page-changed="onPage" />
+      </v-col>
+    </v-footer>
+
   </v-app>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
+import Search from "@/components/Search.vue"
+import Paginator from "@/components/Paginator.vue"
 
 export default Vue.extend({
   name: 'App',
 
   data: () => ({
-    //
-  })
+    keyword: "",
+    page: 1
+  }),
+
+  components: {
+    Search,
+    Paginator
+  },
+
+  methods: {
+    onKeyword(keyword: string) {
+      if (this.keyword === keyword) {
+        return;
+      }
+
+      this.keyword = keyword;
+      this.page = 1;
+      this.$refs.page.reset();
+      this.$store.dispatch('reset', { keyword , page: this.page });
+    },
+    onPage(page: number) {
+      this.page = page;
+      this.$store.dispatch('reset', { keyword: this.keyword, page });
+    }
+  }
 });
 </script>
