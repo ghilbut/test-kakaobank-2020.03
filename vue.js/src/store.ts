@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 
-const PageSize: number = 30;
+const PageSize: number = 20;
 
 Vue.use(Vuex);
 
