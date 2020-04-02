@@ -1,6 +1,21 @@
 <template>
   <v-container>
     <v-row class="text-center">
+
+      <v-col>
+        <v-toolbar dense>
+          <v-text-field
+            hide-details
+            prepend-icon="search"
+            single-line
+          ></v-text-field>
+
+          <v-btn small rounded>
+            검색
+          </v-btn>
+        </v-toolbar>
+      </v-col>
+
       <v-col class="mb-5" cols="12">
         <v-simple-table>
           <template v-slot:default>
@@ -14,7 +29,7 @@
             </thead>
             <tbody>
               <tr v-for="(item, index) in list">
-                <td>{{ index }}</td>
+                <td>{{ index + 1}}</td>
                 <td v-for="target in headers">{{ item[target.value] }}</td>
               </tr>
             </tbody>
@@ -22,13 +37,6 @@
         </v-simple-table>
       </v-col>
 
-      <v-col class="mb-5" cols="12">
-        <v-pagination
-          v-model="page"
-          :length="page_count"
-          :total-visible="page_visible"
-        ></v-pagination>
-      </v-col>
     </v-row>
   </v-container>
 </template>
@@ -37,12 +45,11 @@
 import { Component, Vue, Watch } from 'vue-property-decorator';
 import { mapState } from 'vuex';
 
+
 @Component({
   computed: mapState(['count', 'list', 'page_count'])
 })
 export default class HelloWorld extends Vue {
-  page: number = 1;
-  page_visible: number = 7;
 
   headers: Array<any> = [
     { text: '주차장 이름', value: 'PARKING_NAME' },
@@ -52,11 +59,6 @@ export default class HelloWorld extends Vue {
 
   mounted() {
     this.$store.dispatch('reset', { page: 1 });
-  }
-
-  @Watch('page')
-  onLoad() {
-    this.$store.dispatch('reset', { page: this.page });
   }
 }
 </script>

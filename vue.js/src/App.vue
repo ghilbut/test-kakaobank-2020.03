@@ -36,17 +36,30 @@
     <v-content>
       <router-view />
     </v-content>
+
+
+    <v-footer class="font-weight-medium" app>
+      <v-col class="text-center" cols="12">
+        <Paginator />
+      </v-col>
+    </v-footer>
+
   </v-app>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
+import Paginator from "@/components/Paginator.vue"
 
 export default Vue.extend({
   name: 'App',
 
   data: () => ({
     //
-  })
+  }),
+
+  components: {
+    Paginator
+  }
 });
 </script>
