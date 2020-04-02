@@ -153,10 +153,10 @@ aws_secret_access_key=********
 $ terraform init
 
 # environment variables
-# - TF_VAR_aws_region  (default: ap-northeast-2)
-# - TF_VAR_aws_profile (default: spps)
-# - TF_VAR_srv_name    (default: spps)
-# - TF_VAR_domain_name (default: ghilbut.net)
+#   TF_VAR_aws_region  (default: ap-northeast-2)
+#   TF_VAR_aws_profile (default: spps)
+#   TF_VAR_srv_name    (default: spps)
+#   TF_VAR_domain_name (default: ghilbut.net)
 $ terraform apply
 ```
 
