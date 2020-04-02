@@ -21,7 +21,7 @@ export default class Paginator extends Vue {
 
   @Watch('page')
   onSeleced() {
-    this.$store.dispatch('reset', { page: this.page });
+    this.$store.dispatch('list', { page: this.page });
   }
 }
 </script>

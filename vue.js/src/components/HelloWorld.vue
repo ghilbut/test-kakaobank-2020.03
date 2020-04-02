@@ -2,20 +2,6 @@
   <v-container>
     <v-row class="text-center">
 
-      <v-col>
-        <v-toolbar dense>
-          <v-text-field
-            hide-details
-            prepend-icon="search"
-            single-line
-          ></v-text-field>
-
-          <v-btn small rounded>
-            검색
-          </v-btn>
-        </v-toolbar>
-      </v-col>
-
       <v-col class="mb-5" cols="12">
         <v-simple-table>
           <template v-slot:default>
@@ -58,7 +44,7 @@ export default class HelloWorld extends Vue {
   ];
 
   mounted() {
-    this.$store.dispatch('reset', { page: 1 });
+    this.$store.dispatch('list', { page: 1 });
   }
 }
 </script>
