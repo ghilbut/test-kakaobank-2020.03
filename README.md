@@ -53,11 +53,11 @@ $ pipenv run ./src/manage.py runserver 0:8000
 $ pipenv run ./src/manage.py crawling
 ```
 
-#### Pages 
+#### 결과페이지
 
 - REST API:
   - http://localhost:8000/parking_lots/
-  - http://localhost:8000/parking_lots/<code:int>/
+  - http://localhost:8000/parking_lots/{code:int}/
 - Admin Page: http://localhost:8000/admin
 - Documents:
   - Swagger UI: http://localhost:8000/swagger/
@@ -68,7 +68,9 @@ $ pipenv run ./src/manage.py crawling
 
 ### Vue.js
 
-Page: http://localhost:8080/
+#### 결과페이지
+
+- http://localhost:8080/
 
 
 
