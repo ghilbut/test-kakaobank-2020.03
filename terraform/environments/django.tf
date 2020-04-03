@@ -140,7 +140,7 @@ resource aws_lb_target_group django {
 }
 
 resource aws_lb_listener_rule django {
-  listener_arn = aws_lb_listener.http.arn
+  listener_arn = aws_lb_listener.https.arn
   priority     = local.alb_django_priority
 
   action {
