@@ -1,0 +1,134 @@
+name: Deploy django to develop stage
+
+on:
+  push:
+    branches:
+      - master
+      - Issue-*
+    paths:
+      - .github/workflows/deploy-django.yml
+      - django/Dockerfile
+      - django/Pipfile.lock
+      - django/ecs/django-task-definition.json
+      - django/src/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      WORKDIR: ./django
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to AWS ECR 
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Make docker image name and tag to publish
+        id: docker
+        run: |
+          echo ::set-output name=name::${REGISTRY}/${REPOSITORY}
+          echo ::set-output name=tag::v$(date +'%Y.%m.%d-%H.%M.%S')
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          REPOSITORY: django
+
+      - name: Build and push the tagged docker image
+        run: |
+          docker build \
+                 -t ${{ steps.docker.outputs.name }}:${{ steps.docker.outputs.tag }} \
+                 --label GITHUB_REF=${GITHUB_REF} \
+                 --label GITHUB_SHA=${GITHUB_SHA} \
+                 --target release \
+                 .
+          docker push ${{ steps.docker.outputs.name }}:${{ steps.docker.outputs.tag }}
+        working-directory: ${{ env.WORKDIR }}
+
+      - name: Logout AWS ECR
+        if: always()
+        run: docker logout ${{ steps.ecr.outputs.registry }}
+
+      - name: Save docker image name
+        run: echo ${{ steps.docker.outputs.name }} >> name.txt
+      - name: Upload docker image name
+        uses: actions/upload-artifact@v1
+        with:
+          name: docker_name
+          path: name.txt
+
+      - name: Save docker image tag
+        run: echo ${{ steps.docker.outputs.tag }} >> tag.txt
+      - name: Upload docker image tag
+        uses: actions/upload-artifact@v1
+        with:
+          name: docker_tag
+          path: tag.txt
+
+  deploy:
+    needs:
+      - build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Download docker name
+        uses: actions/download-artifact@v1
+        with:
+          name: docker_name
+      - name: Download docker tag
+        uses: actions/download-artifact@v1
+        with:
+          name: docker_tag
+      - name: Get docker image name and tag to publish
+        id: docker
+        run: |
+          echo ::set-output name=name::`cat docker_name/name.txt`
+          echo ::set-output name=tag::`cat docker_tag/tag.txt`
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: django/ecs/django-task-definition.json
+          container-name: django
+          image: ${{ steps.docker.outputs.name }}:${{ steps.docker.outputs.tag }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: django
+          cluster: spps
+          wait-for-service-stability: true
+
+      - name: Login to AWS ECR 
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Tag latest and push image to AWS ECR
+        run: |
+          docker pull ${IMAGE_NAME}:${IMAGE_TAG}
+          docker image tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
+          docker push ${IMAGE_NAME}:latest
+        env:
+          IMAGE_NAME: ${{ steps.docker.outputs.name }}
+          IMAGE_TAG: ${{ steps.docker.outputs.tag }}
+
+      - name: Logout AWS ECR
+        if: always()
+        run: docker logout ${{ steps.ecr.outputs.registry }}

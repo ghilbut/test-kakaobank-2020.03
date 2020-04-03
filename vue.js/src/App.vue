@@ -22,38 +22,42 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import Search from "@/components/Search.vue"
-import Paginator from "@/components/Paginator.vue"
+import { Component, Vue } from 'vue-property-decorator'
+import Search from '@/components/Search.vue'
+import Paginator from '@/components/Paginator.vue'
 
-export default Vue.extend({
+@Component({
   name: 'App',
-
-  data: () => ({
-    keyword: "",
-    page: 1
-  }),
-
   components: {
     Search,
     Paginator
-  },
-
-  methods: {
-    onKeyword(keyword: string) {
-      if (this.keyword === keyword) {
-        return;
-      }
-
-      this.keyword = keyword;
-      this.page = 1;
-      this.$refs.page.reset();
-      this.$store.dispatch('reset', { keyword , page: this.page });
-    },
-    onPage(page: number) {
-      this.page = page;
-      this.$store.dispatch('reset', { keyword: this.keyword, page });
-    }
   }
-});
+})
+export default class App extends Vue {
+
+  $refs: any = {
+    search: Search,
+    list:   undefined,
+    page:   Paginator
+  };
+
+  keyword: string = '';
+  page: number    = 1;
+
+  onKeyword(keyword: string) {
+    if (this.keyword === keyword) {
+      return;
+    }
+
+    this.keyword = keyword;
+    this.page = 1;
+    this.$refs.page.reset();
+    this.$store.dispatch('reset', { keyword , page: this.page });
+  }
+
+  onPage(page: number) {
+    this.page = page;
+    this.$store.dispatch('reset', { keyword: this.keyword, page });
+  }
+}
 </script>

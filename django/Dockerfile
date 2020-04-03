@@ -69,4 +69,4 @@ COPY --from=builder /usr/local/lib/python3.8/site-packages /usr/local/lib/python
 COPY --from=builder /usr/local/bin/uvicorn /usr/local/bin/uvicorn
 COPY --chown=${USER}:${GROUP} ./src .
 
-CMD ["uvicorn", "--host", "0", "byfs.asgi:application"]
+CMD ["uvicorn", "--host", "0", "spps.asgi:application"]

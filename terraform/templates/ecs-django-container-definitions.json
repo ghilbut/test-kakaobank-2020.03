@@ -1,0 +1,16 @@
+[
+  {
+    "name": "${name}",
+    "image": "${image}",
+    "essential": true,
+    "portMappings": [
+      {
+        "protocol": "tcp",
+        "containerPort": ${port}
+      }
+    ],
+    "environment": ${environment},
+    "secrets": ${secrets},
+    "logConfiguration": ${log_config}
+  }
+]
