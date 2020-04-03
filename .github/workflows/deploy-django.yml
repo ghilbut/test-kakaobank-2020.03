@@ -104,7 +104,7 @@ jobs:
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: django/ecs/dev/django-task-definition.json
+          task-definition: django/ecs/django-task-definition.json
           container-name: django
           image: ${{ steps.docker.outputs.name }}:${{ steps.docker.outputs.tag }}
 
