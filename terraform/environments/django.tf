@@ -174,7 +174,7 @@ locals {
   environment = [
     {
       "name": "DJANGO_SETTINGS_MODULE",
-      "value": "spps.settings"
+      "value": "spps.settings.prod"
     }
   ]
 
@@ -288,7 +288,7 @@ resource aws_ecs_service django {
     ]
   }
 
-  name                               = "${var.srv_name}"
+  name                               = "django"
   cluster                            = aws_ecs_cluster.default.id
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
