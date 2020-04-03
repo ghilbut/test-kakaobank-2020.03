@@ -6,7 +6,7 @@
     "portMappings": [
       {
         "protocol": "tcp",
-        "containerPort": 8000
+        "containerPort": ${port}
       }
     ],
     "environment": ${environment},

@@ -36,9 +36,10 @@ locals {
   web_domain = "${var.srv_name}.${var.domain_name}"
   api_domain = "${var.srv_name}-api.${var.domain_name}"
 
-  django_cpu = "256"
-  django_memory = "512"
-  django_port = 8000
+  django_container_name = "django"
+  django_cpu            = "256"
+  django_memory         = "512"
+  django_port           = 8000
 
   alb_django_priority = 100
 

@@ -68,7 +68,7 @@ resource aws_iam_role_policy_attachment secrets {
 ##
 
 resource aws_ecr_repository django {
-  name = "django"
+  name = local.django_container_name
 
   image_scanning_configuration {
     scan_on_push = true
@@ -174,7 +174,7 @@ locals {
   environment = [
     {
       "name": "DJANGO_SETTINGS_MODULE",
-      "value": "spps.settings.prod"
+      "value": "spps.settings.local"
     }
   ]
 
@@ -209,8 +209,9 @@ data template_file django_containers {
   template = file("${path.module}/../templates/ecs-django-container-definitions.json")
 
   vars = {
-    name        = "django"
+    name        = local.django_container_name
     image       = "${aws_ecr_repository.django.repository_url}:latest"
+    port        = local.django_port
     environment = jsonencode(local.environment)
     secrets     = jsonencode(local.secrets)
     log_config  =<<EOF
@@ -279,6 +280,36 @@ resource aws_ecs_task_definition django {
 }
 
 ##--------------------------------------------------------------
+##  security group
+
+resource aws_security_group django {
+  name        = "${var.srv_name}-django"
+  description = "Allow all traffic"
+  vpc_id      = data.aws_vpc.default.id
+
+  ingress {
+    from_port   = 8000
+    to_port     = 8000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = -1
+    cidr_blocks     = ["0.0.0.0/0"]
+  }
+
+  tags = merge(
+    map(
+      "Name", "sg-${var.srv_name}-django",
+    ),
+    local.tags, 
+  )
+}
+
+##--------------------------------------------------------------
 ##  service
 
 resource aws_ecs_service django {
@@ -301,7 +332,7 @@ resource aws_ecs_service django {
       data.aws_subnet.default.id,
     ]
     security_groups  = [
-      aws_security_group.www.id,
+      aws_security_group.django.id,
     ]
 
     # if you have NAT, set to false
@@ -310,7 +341,7 @@ resource aws_ecs_service django {
 
   load_balancer {
     target_group_arn = aws_lb_target_group.django.id
-    container_name   = "django"
+    container_name   = local.django_container_name
     container_port   = local.django_port
   }
 
