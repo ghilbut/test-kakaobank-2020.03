@@ -35,7 +35,7 @@ jobs:
       working-directory: ${{ env.WORKDIR }}
 
     - name: Build
-      run: yarn build
+      run: yarn build --mode prod
       working-directory: ${{ env.WORKDIR }}
 
     - name: deploy
