@@ -5,7 +5,7 @@ DEBUG = False
 
 
 ALLOWED_HOSTS = [
-  '17*.*.*.*:8000',
+  '*:8000',
   'spps.ghilbut.net',
   'spps-api.ghilbut.net',
 ]
