@@ -174,7 +174,7 @@ locals {
   environment = [
     {
       "name": "DJANGO_SETTINGS_MODULE",
-      "value": "spps.settings.local"
+      "value": "spps.settings.prod"
     }
   ]
 
