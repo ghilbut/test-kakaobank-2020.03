@@ -33,15 +33,24 @@ resource aws_acm_certificate www {
   }
 }
 
-resource aws_acm_certificate api {
-  provider = aws.acm_certificate
+resource aws_route53_record aws_acm_certificate_www {
+  zone_id = data.aws_route53_zone.public.zone_id
+  name    = aws_acm_certificate.www.domain_validation_options.0.resource_record_name
+  type    = aws_acm_certificate.www.domain_validation_options.0.resource_record_type
+  ttl     = 5
 
+  records = [
+    aws_acm_certificate.www.domain_validation_options.0.resource_record_value,
+  ]
+}
+
+resource aws_acm_certificate api {
   domain_name       = local.api_domain
   validation_method = "DNS"
 
   tags = merge(
     map(
-      "Name", "${local.api_domain}",
+      "Name", local.api_domain,
     ),
     local.tags,
   )
@@ -51,23 +60,14 @@ resource aws_acm_certificate api {
   }
 }
 
-locals {
-  acm_validation_options = [
-    aws_acm_certificate.www.domain_validation_options,
-    aws_acm_certificate.api.domain_validation_options,
-  ]
-}
-
-resource aws_route53_record aws_acm_certificate {
-  count = length(local.acm_validation_options)
-
+resource aws_route53_record aws_acm_certificate_api {
   zone_id = data.aws_route53_zone.public.zone_id
-  name    = local.acm_validation_options.*.0.resource_record_name[count.index]
-  type    = local.acm_validation_options.*.0.resource_record_type[count.index]
+  name    = aws_acm_certificate.api.domain_validation_options.0.resource_record_name
+  type    = aws_acm_certificate.api.domain_validation_options.0.resource_record_type
   ttl     = 5
 
   records = [
-    local.acm_validation_options.*.0.resource_record_value[count.index],
+    aws_acm_certificate.api.domain_validation_options.0.resource_record_value,
   ]
 }
 
@@ -157,6 +157,28 @@ resource aws_lb_listener http {
   load_balancer_arn = aws_lb.alb.arn
   port              = "80"
   protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+resource aws_lb_listener https {
+  depends_on = [
+    aws_route53_record.aws_acm_certificate_api,
+  ]
+
+  load_balancer_arn = aws_lb.alb.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
+  certificate_arn   = aws_acm_certificate.api.arn
 
   default_action {
     type = "fixed-response"
