@@ -1,0 +1,49 @@
+name: Deploy vue.js projet
+
+on:
+  push:
+    branches: 
+      - master
+      - Issue-*
+    paths:
+      - .github/workflows/deploy-vue-js.yml
+      - vue.js/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      WORKDIR: ./vue.js
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.ref }}
+
+    - name: Get yarn cache
+      id: yarn-cache
+      run: echo "::set-output name=dir::$(yarn cache dir)"
+
+    - uses: actions/cache@v1
+      with:
+        path: ${{ steps.yarn-cache.outputs.dir }}
+        key:  ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-
+    - name: Install Packages
+      run: yarn install
+      working-directory: ${{ env.WORKDIR }}
+
+    - name: Build
+      run: yarn build
+      working-directory: ${{ env.WORKDIR }}
+
+    - name: deploy
+      env:
+        AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      run: |
+        aws s3 sync \
+          --acl public-read \
+          ./dist s3://spps.ghilbut.com
+      working-directory: ${{ env.WORKDIR }}

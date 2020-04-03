@@ -1,20 +1,19 @@
 ################################################################
 ##
-##  S3
+##  AWS S3
 ##
 
 ##--------------------------------------------------------------
-##  Security Group
+##  AWS Security Groups
 
 resource aws_s3_bucket www {
-  bucket        = "${local.srv_name}-${terraform.workspace}.${local.domain_name}"
+  bucket        = "${local.web_domain}"
   acl           = "private"
   force_destroy = true
 
   tags = "${merge(
     map(
-      "Name",  local.domain_name,
-      "stage", terraform.workspace,
+      "Name",  "${local.api_domain}",
     ),
     local.tags, 
   )}"
@@ -23,7 +22,7 @@ resource aws_s3_bucket www {
 resource aws_s3_bucket_policy www {
   bucket = aws_s3_bucket.www.id
 
-  policy = <<POLICY
+  policy = <<EOF
 {
   "Version": "2012-10-17",
   "Id": "cloudfront-only",
@@ -50,59 +49,18 @@ resource aws_s3_bucket_policy www {
     }
   ]
 }
-POLICY
+EOF
 }
 
 
 
 ################################################################
 ##
-##  CloudFront
+##  AWS CloudFront
 ##
 
-##--------------------------------------------------------------
-##  Certificate Manager
-
-provider aws {
-  alias   = "acm_certificate"
-  region  = "us-east-1"
-  profile = var.aws_profile
-}
-
-resource aws_acm_certificate www {
-  provider = aws.acm_certificate
-
-  domain_name       = "${local.srv_name}.${local.domain_name}"
-  validation_method = "DNS"
-
-  tags = merge(
-    map(
-      "Name", "${local.srv_name}.${local.domain_name}",
-    ),
-    local.tags,
-  )
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-resource aws_route53_record aws_acm_certificate {
-  zone_id = data.aws_route53_zone.public.zone_id
-  name    = aws_acm_certificate.www.domain_validation_options.*.resource_record_name[0]
-  type    = aws_acm_certificate.www.domain_validation_options.*.resource_record_type[0]
-  ttl     = 5
-
-  records = [
-    aws_acm_certificate.www.domain_validation_options.*.resource_record_value[0],
-  ]
-}
-
-##--------------------------------------------------------------
-##  CloudFront
-
 resource aws_cloudfront_origin_access_identity www {
-  comment = "${local.srv_name}-${terraform.workspace}"
+  comment = "${local.web_domain}"
 }
 
 resource aws_cloudfront_distribution www {
@@ -124,7 +82,7 @@ resource aws_cloudfront_distribution www {
   default_root_object = "index.html"
 
   aliases = [
-    "${local.srv_name}.${local.domain_name}",
+    "${local.web_domain}",
   ]
 
   default_cache_behavior {
@@ -140,6 +98,7 @@ resource aws_cloudfront_distribution www {
       }
     }
 
+    #viewer_protocol_policy = "redirect-to-https"
     viewer_protocol_policy = "allow-all"
     min_ttl                = 0
     default_ttl            = 0  # 3600
@@ -167,12 +126,12 @@ resource aws_cloudfront_distribution www {
 
 ################################################################
 ##
-##  Route 53
+##  AWS Route 53
 ##
 
 resource aws_route53_record cloudfront {
   zone_id = data.aws_route53_zone.public.zone_id
-  name    = "${local.srv_name}.${local.domain_name}"
+  name    = "${local.web_domain}"
   type    = "A"
 
   alias {

@@ -1,0 +1,12 @@
+{
+  "family": "${family}",
+  "executionRoleArn": "${execution_role}",
+  "networkMode": "awsvpc",
+  "containerDefinitions": ${containers},
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "${cpu}",
+  "memory": "${memory}",
+  "tags": ${tags}
+}
