@@ -45,5 +45,5 @@ jobs:
       run: |
         aws s3 sync \
           --acl public-read \
-          ./dist s3://spps.ghilbut.com
+          ./dist s3://spps.ghilbut.net
       working-directory: ${{ env.WORKDIR }}
