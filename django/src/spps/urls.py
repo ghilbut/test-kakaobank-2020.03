@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.http import HttpResponse
 from django.urls import (
   include,
   path,
@@ -42,7 +43,12 @@ schema_view = get_schema_view(
 )
 
 
+def healthz(request):
+    return HttpResponse("OK")
+
+
 urlpatterns = [
+    path('', healthz),
     path('admin/', admin.site.urls),
     path('parking_lots/', include(router.urls)),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
