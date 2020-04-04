@@ -6,6 +6,7 @@ on:
       - Issue-*
     paths:
       - .github/workflows/test-django-issues.yml
+      - django/Dockerfile
       - django/Pipfile.lock
       - django/src/**
 

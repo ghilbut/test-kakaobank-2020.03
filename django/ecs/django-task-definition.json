@@ -14,7 +14,7 @@
       }
     ],
     "environment": [{"name":"DJANGO_SETTINGS_MODULE","value":"spps.settings.prod"}],
-    "secrets": [{"name":"SPPS_DB_HOST","valueFrom":"arn:aws:secretsmanager:ap-northeast-2:869061964712:secret:spps-mysql-host-fkgd79"},{"name":"SPPS_DB_PORT","valueFrom":"arn:aws:secretsmanager:ap-northeast-2:869061964712:secret:spps-mysql-port-cpVF4c"},{"name":"SPPS_DB_NAME","valueFrom":"arn:aws:secretsmanager:ap-northeast-2:869061964712:secret:spps-mysql-database-jmy4n9"},{"name":"SPPS_DB_USER","valueFrom":"arn:aws:secretsmanager:ap-northeast-2:869061964712:secret:spps-mysql-username-jmy4n9"},{"name":"SPPS_DB_PASSWORD","valueFrom":"arn:aws:secretsmanager:ap-northeast-2:869061964712:secret:spps-mysql-password-umvhUa"}],
+    "secrets": [{"name":"SPPS_DB_HOST","valueFrom":"arn:aws:secretsmanager:ap-northeast-2:869061964712:secret:spps-mysql-host-Sg45My"},{"name":"SPPS_DB_PORT","valueFrom":"arn:aws:secretsmanager:ap-northeast-2:869061964712:secret:spps-mysql-port-0nFsaG"},{"name":"SPPS_DB_NAME","valueFrom":"arn:aws:secretsmanager:ap-northeast-2:869061964712:secret:spps-mysql-database-7liPrF"},{"name":"SPPS_DB_USER","valueFrom":"arn:aws:secretsmanager:ap-northeast-2:869061964712:secret:spps-mysql-username-rpPLxI"},{"name":"SPPS_DB_PASSWORD","valueFrom":"arn:aws:secretsmanager:ap-northeast-2:869061964712:secret:spps-mysql-password-wj6J8k"}],
     "logConfiguration": {
   "logDriver": "awslogs",
   "options": {

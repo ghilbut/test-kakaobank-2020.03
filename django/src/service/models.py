@@ -1,4 +1,3 @@
-from django.contrib.gis.db.models import PointField
 from django.core.validators import (
   MaxValueValidator,
   MinValueValidator,
