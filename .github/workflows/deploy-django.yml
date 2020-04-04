@@ -189,6 +189,11 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          SPPS_DB_NAME: x
+          SPPS_DB_HOST: x
+          SPPS_DB_PORT: x
+          SPPS_DB_USER: x
+          SPPS_DB_PASSWORD: x
         run: |
           docker run \
             -v $(pwd)/static:/app/static \
@@ -197,7 +202,7 @@ jobs:
             ./manage.py collectstatic --no-input --settings spps.settings.prod
           aws s3 sync \
             --acl public-read \
-            ./static s3://spps.ghilbut.net/static
+            $(pwd)/static s3://spps.ghilbut.net/static
         working-directory: ${{ env.WORKDIR }}
 
       - name: Fill in the new image ID in the Amazon ECS task definition
