@@ -1,7 +1,7 @@
 from spps.settings.local import *
 
 
-DEBUG = False
+DEBUG = True
 
 
 ALLOWED_HOSTS = [
