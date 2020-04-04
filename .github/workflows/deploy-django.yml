@@ -196,6 +196,11 @@ jobs:
           SPPS_DB_PASSWORD: x
         run: |
           docker run \
+            -e SPPS_DB_NAME \
+            -e SPPS_DB_HOST \
+            -e SPPS_DB_PORT \
+            -e SPPS_DB_USER \
+            -e SPPS_DB_PASSWORD \
             -v `pwd`/static:/app/static \
             --rm \
             ${IMAGE_NAME}:${IMAGE_TAG} \
