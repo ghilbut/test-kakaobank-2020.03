@@ -79,15 +79,22 @@ class ParkingLotModelViewSet(ReadOnlyModelViewSet):
   pagination_class = ParkingLotModelPagination
 
   def get_queryset(self):
-    key = self.request.query_params.get('q')
-    if key == None:
-      return self.queryset
-
+    query = self.queryset.distinct()
     q = Q()
-    q.add(Q(address__contains=key),   q.OR)
-    q.add(Q(phone_num__contains=key), q.OR)
-    q.add(Q(name__contains=key),      q.OR)
-    return self.queryset.filter(q)
+
+    # 키워드 검색
+    key = self.request.query_params.get('q')
+    if key != None:
+      q.add(Q(address__contains=key),   q.OR)
+      q.add(Q(phone_num__contains=key), q.OR)
+      q.add(Q(name__contains=key),      q.OR)
+
+    # 1시간 기준 저렴한 금액순
+    query = query.filter(price__time=1)
+    query = query.order_by('price__price')
+
+    query = query.filter(q)
+    return query
 
 
 router = DefaultRouter()

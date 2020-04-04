@@ -27,6 +27,8 @@ class TimePriceTableModel(models.Model):
     ParkingLotModel,
     db_column='parking_lot_code',
     on_delete=models.CASCADE,
+    related_name='prices',
+    related_query_name='price',
   )
   time = models.SmallIntegerField(
     db_index=True,
