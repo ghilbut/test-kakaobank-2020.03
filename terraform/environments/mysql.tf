@@ -98,7 +98,8 @@ resource random_string mysql_username {
 
 resource random_password mysql_password {
   length = 12
-  special = true
+  # [2020/04/04] Error creating DB Instance: InvalidParameterValue: The parameter MasterUserPassword is not a valid password. Only printable ASCII characters besides '/', '@', '"', ' ' may be used.
+  special = false
   override_special = "!@#$%^&*()"
 }
 

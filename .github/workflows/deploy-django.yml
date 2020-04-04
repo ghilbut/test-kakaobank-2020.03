@@ -74,6 +74,8 @@ jobs:
           docker network rm mysql
 
   build:
+    needs:
+      - test
     runs-on: ubuntu-18.04
     env:
       WORKDIR: ./django
@@ -153,28 +155,13 @@ jobs:
         run: |
           echo ::set-output name=name::`cat docker_name/name.txt`
           echo ::set-output name=tag::`cat docker_tag/tag.txt`
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Fill in the new image ID in the Amazon ECS task definition
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: django/ecs/django-task-definition.json
-          container-name: django
-          image: ${{ steps.docker.outputs.name }}:${{ steps.docker.outputs.tag }}
-
-      - name: Deploy Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: django
-          cluster: spps
-          wait-for-service-stability: true
 
       - name: Login to AWS ECR 
         id: ecr
@@ -192,3 +179,19 @@ jobs:
       - name: Logout AWS ECR
         if: always()
         run: docker logout ${{ steps.ecr.outputs.registry }}
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: django/ecs/django-task-definition.json
+          container-name: django
+          image: ${{ steps.docker.outputs.name }}:${{ steps.docker.outputs.tag }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: django
+          cluster: spps
+          wait-for-service-stability: true
