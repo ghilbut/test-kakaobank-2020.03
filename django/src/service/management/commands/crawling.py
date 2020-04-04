@@ -2,9 +2,14 @@ import binascii
 import json
 import os
 import requests
-import time
+from datetime import datetime
 from django.core.management.base import BaseCommand
-from service.models import ParkingLot
+from django.db import transaction
+from pytz import timezone, utc
+from service.models import (
+  ParkingLotModel,
+  TimePriceTableModel,
+)
 
 
 class Command(BaseCommand):
@@ -17,7 +22,9 @@ class Command(BaseCommand):
     begin = 1
     end   = steps
 
-    version = int(time.time())
+    KST = timezone('Asia/Seoul')
+    now = datetime.utcnow()
+    ver = str(KST.localize(now))
 
     while True:
       print(f'BEGIN({begin}) - END({end})')
@@ -33,7 +40,7 @@ class Command(BaseCommand):
       row   = obj['GetParkInfo']['row']
       end   = begin + len(row) - 1
 
-      _update_parking_lot(row, version)
+      _update_parking_lots(row, now, ver)
 
       break  # temp for test
 
@@ -43,9 +50,9 @@ class Command(BaseCommand):
       begin = end + 1
       end   = min(total, end + steps)
 
-    n = ParkingLot.objects.exclude(version=version).delete()
-    n = n[1].get('service.ParkingLot', 0)
-    print(f'ParkingLot: {n} rows are deleted')
+    n = ParkingLotModel.objects.exclude(version=ver).delete()
+    n = n[1].get('service.ParkingLotModel', 0)
+    print(f'ParkingLotModel: {n} rows are deleted')
 
 
 def _assert_result(result: dict) -> None:
@@ -54,12 +61,16 @@ def _assert_result(result: dict) -> None:
   assert c == 'INFO-000', f'[CODE: {c}] {m}'
 
 
-def _update_parking_lot(parking_lots: list, version: int) -> None:
+@transaction.atomic
+def _update_parking_lots(parking_lots: list, now: datetime, version: str) -> None:
   code_list = {item['PARKING_CODE'] for item in parking_lots}
   code_list = list(code_list)
 
-  rows = ParkingLot.objects.filter(code__in=code_list)
+  rows = ParkingLotModel.objects.filter(code__in=code_list)
   rows = {row.code:row for row in rows}
+
+  weekday = now.weekday()
+  holiday = False  #48 공공데이터포털의 API가 동작하지 않아 휴일을 구분할 수 없다.
 
   for item in parking_lots:
     code = int(item['PARKING_CODE'])
@@ -71,7 +82,7 @@ def _update_parking_lot(parking_lots: list, version: int) -> None:
       update = (row.crc32 != crc32)
       update_fields = ['version']
     except KeyError:
-      row = ParkingLot(code=code)
+      row = ParkingLotModel(code=code)
       update = True
       update_fields = None
 
@@ -86,17 +97,92 @@ def _update_parking_lot(parking_lots: list, version: int) -> None:
     row.version = version
     row.save(update_fields=update_fields)
 
+    prices = _calc_time_pricing_table(code, item, weekday, holiday)
+    for time, price in enumerate(prices, -1):
+      # -1: 월정액
+      #  0: 일 최대요금
+      #. 1: 1시간 요금
+      #. 2: 2시간 요금
+      #. 3: 3시간 요금
+      #. 4: 4시간 요금
+      TimePriceTableModel.objects.update_or_create(
+        parking_lot=row,
+        time=time,
+        defaults= {
+          'price': price,
+        }
+      )
+
 
 def _regulate_phone_number(tel: str) -> str:
   assert isinstance(tel, str)
-
   tel = tel.strip().replace(')', '-')
-  if '~' in tel:
-    p = tel[:-3]
-    b = int(tel[-3:-2])
-    e = int(tel[-1:])
-    tel = {f'{p}{n}' for n in range(b, e+1)}
-  else:
-    tel = [tel]
-
+  if not '~' in tel:
+    return tel
+  p = tel[:-3]
+  b = int(tel[-3:-2])
+  e = int(tel[-1:])
+  tel = {f'{p}{n}' for n in range(b, e+1)}
   return ','.join(tel)
+
+
+def _calc_time_pricing_table(code: int, item: dict, weekday: int, holiday: bool) -> list:
+  retval = [_price_per_month(item)]
+
+  # 무료 / 토요일 무료 / 일요일 무료
+  isfree = (item['PAY_YN'] == 'N')
+  isfree = isfree or (weekday == 5 and item['SATURDAY_PAY_YN'] == 'N')
+  isfree = isfree or (weekday == 6 and item['HOLIDAY_PAY_YN'] == 'N')
+  if isfree:
+    for _ in range(0, 5):
+      retval.append(0)
+  else:
+    retval.append(_price_per_day(item, weekday, holiday))
+    for hour in range(1, 5):
+      retval.append(_price_per_hour(item, hour))
+  return retval
+
+
+def _price_per_month(item: dict) -> int:
+  v = item['FULLTIME_MONTHLY']
+  return (_price_per_day(item, 0, False) * 30 if v == '' or int(v) == 0 else int(v))
+
+
+def _price_per_day(item: dict, weekday: int, holiday: bool) -> int:
+  v = int(item['DAY_MAXIMUM'])
+  if v > 0:
+    return v
+
+  def to_minute(v: str) -> int:
+    h = int(int(v) / 100)
+    m = int(v) % 100
+    return h * 60 + m
+
+  if weekday in [5, 6]:
+    begin = to_minute(item['WEEKEND_BEGIN_TIME'])
+    end   = to_minute(item['WEEKEND_END_TIME'])
+  elif holiday:
+    begin = to_minute(item['HOLIDAY_BEGIN_TIME'])
+    end   = to_minute(item['HOLIDAY_END_TIME'])
+  else:
+    begin = to_minute(item['WEEKDAY_BEGIN_TIME'])
+    end   = to_minute(item['WEEKDAY_END_TIME'])
+
+  return _price_per_minute(item, (0 if begin < end else 24*60) - begin + end)
+
+
+def _price_per_hour(item: dict, hours: int) -> int:
+  return _price_per_minute(item, hours * 60)
+
+
+def _price_per_minute(item: dict, minutes: int) -> int:
+  base_price = int(item['RATES'])
+  base_time_rate = int(item['TIME_RATE'])
+  extra_price = int(item['ADD_RATES'])
+  extra_time_rate = int(item['ADD_TIME_RATE'])
+
+  price = base_price
+  if extra_price > 0:
+    extra_time = minutes - base_time_rate
+    price += int(extra_time / extra_time_rate) * extra_price
+  return price

@@ -17,11 +17,11 @@ from rest_framework.serializers import (
 )
 from rest_framework.status import HTTP_404_NOT_FOUND
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from .models import ParkingLot
+from .models import ParkingLotModel
 
 
-class ParkingLotSerializer(Serializer):
-  def to_representation(self, value: ParkingLot) -> dict:
+class ParkingLotModelSerializer(Serializer):
+  def to_representation(self, value: ParkingLotModel) -> dict:
     return json.loads(value.json_string)
 
 
@@ -29,7 +29,7 @@ class ErrorSerializer(Serializer):
   detail = CharField()
 
 
-class ParkingLotPagination(PageNumberPagination):
+class ParkingLotModelPagination(PageNumberPagination):
   page_size = 20
   page_query_description = '조회하려는 페이지의 숫자'
   page_size_query_param = 'size'
@@ -72,23 +72,30 @@ class ParkingLotPagination(PageNumberPagination):
     },
   )
 )
-class ParkingLotViewSet(ReadOnlyModelViewSet):
-  queryset = ParkingLot.objects.all()
+class ParkingLotModelViewSet(ReadOnlyModelViewSet):
+  queryset = ParkingLotModel.objects.all()
   lookup_field = 'code'
-  serializer_class = ParkingLotSerializer
-  pagination_class = ParkingLotPagination
+  serializer_class = ParkingLotModelSerializer
+  pagination_class = ParkingLotModelPagination
 
   def get_queryset(self):
-    key = self.request.query_params.get('q')
-    if key == None:
-      return self.queryset
-
+    query = self.queryset.distinct()
     q = Q()
-    q.add(Q(address__contains=key),   q.OR)
-    q.add(Q(phone_num__contains=key), q.OR)
-    q.add(Q(name__contains=key),      q.OR)
-    return self.queryset.filter(q)
+
+    # 키워드 검색
+    key = self.request.query_params.get('q')
+    if key != None:
+      q.add(Q(address__contains=key),   q.OR)
+      q.add(Q(phone_num__contains=key), q.OR)
+      q.add(Q(name__contains=key),      q.OR)
+
+    # 1시간 기준 저렴한 금액순
+    query = query.filter(price__time=1)
+    query = query.order_by('price__price')
+
+    query = query.filter(q)
+    return query
 
 
 router = DefaultRouter()
-router.register(r'', ParkingLotViewSet)
+router.register(r'', ParkingLotModelViewSet)
