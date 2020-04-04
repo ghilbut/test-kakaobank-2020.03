@@ -134,9 +134,10 @@ resource aws_lb_target_group django {
   vpc_id      = data.aws_vpc.default.id
   target_type = "ip"
 
-  #health_check {
-  #  enabled = false
-  #}
+  health_check {
+    interval = 10
+    path = "/healthz"
+  }
 }
 
 resource aws_lb_listener_rule django {
