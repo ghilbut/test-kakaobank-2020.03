@@ -28,4 +28,4 @@ DATABASES = {
 
 
 STATIC_ROOT = os.path.abspath(os.path.join(BASE_DIR, '../static'))
-STATIC_URL = 'http://spps.ghilbut.net/static/'
+STATIC_URL = 'https://spps.ghilbut.net/static/'
