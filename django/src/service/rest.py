@@ -17,11 +17,11 @@ from rest_framework.serializers import (
 )
 from rest_framework.status import HTTP_404_NOT_FOUND
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from .models import ParkingLot
+from .models import ParkingLotModel
 
 
-class ParkingLotSerializer(Serializer):
-  def to_representation(self, value: ParkingLot) -> dict:
+class ParkingLotModelSerializer(Serializer):
+  def to_representation(self, value: ParkingLotModel) -> dict:
     return json.loads(value.json_string)
 
 
@@ -29,7 +29,7 @@ class ErrorSerializer(Serializer):
   detail = CharField()
 
 
-class ParkingLotPagination(PageNumberPagination):
+class ParkingLotModelPagination(PageNumberPagination):
   page_size = 20
   page_query_description = '조회하려는 페이지의 숫자'
   page_size_query_param = 'size'
@@ -72,11 +72,11 @@ class ParkingLotPagination(PageNumberPagination):
     },
   )
 )
-class ParkingLotViewSet(ReadOnlyModelViewSet):
-  queryset = ParkingLot.objects.all()
+class ParkingLotModelViewSet(ReadOnlyModelViewSet):
+  queryset = ParkingLotModel.objects.all()
   lookup_field = 'code'
-  serializer_class = ParkingLotSerializer
-  pagination_class = ParkingLotPagination
+  serializer_class = ParkingLotModelSerializer
+  pagination_class = ParkingLotModelPagination
 
   def get_queryset(self):
     key = self.request.query_params.get('q')
@@ -91,4 +91,4 @@ class ParkingLotViewSet(ReadOnlyModelViewSet):
 
 
 router = DefaultRouter()
-router.register(r'', ParkingLotViewSet)
+router.register(r'', ParkingLotModelViewSet)
