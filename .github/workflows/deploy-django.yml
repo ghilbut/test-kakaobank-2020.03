@@ -1,4 +1,4 @@
-name: Deploy django to develop stage
+name: Deploy django application
 
 on:
   push:
@@ -185,6 +185,21 @@ jobs:
         if: always()
         run: docker logout ${{ steps.ecr.outputs.registry }}
 
+      - name: Deploy static files
+        env:
+          AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          docker run \
+            -v $(pwd)/static:/app/static \
+            --rm \
+            ${IMAGE_NAME}:${IMAGE_TAG} \
+            ./manage.py collectstatic --no-input --settings spps.settings.prod
+          aws s3 sync \
+            --acl public-read \
+            ./static s3://spps.ghilbut.net/static
+        working-directory: ${{ env.WORKDIR }}
+
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -200,18 +215,3 @@ jobs:
           service: django
           cluster: spps
           wait-for-service-stability: true
-
-      - name: Deploy static files
-        env:
-          AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          docker run \
-            -v $(pwd)/static:/app/static \
-            --rm \
-            ${IMAGE_NAME}:${IMAGE_TAG} \
-            ./manage.py collectstatic --no-input --settings spps.settings.prod
-          aws s3 sync \
-            --acl public-read \
-            ./static s3://spps.ghilbut.net/static
-        working-directory: ${{ env.WORKDIR }}
