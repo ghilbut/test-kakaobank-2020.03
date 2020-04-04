@@ -196,13 +196,13 @@ jobs:
           SPPS_DB_PASSWORD: x
         run: |
           docker run \
-            -v ./static:/app/static \
+            -v `pwd`/static:/app/static \
             --rm \
             ${IMAGE_NAME}:${IMAGE_TAG} \
             ./manage.py collectstatic --no-input --settings spps.settings.prod
           aws s3 sync \
             --acl public-read \
-            ./static s3://spps.ghilbut.net/static
+            `pwd`/static s3://spps.ghilbut.net/static
         working-directory: ${{ env.WORKDIR }}
 
       - name: Fill in the new image ID in the Amazon ECS task definition
