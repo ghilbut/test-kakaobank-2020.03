@@ -313,6 +313,10 @@ resource aws_security_group django {
 ##  service
 
 resource aws_ecs_service django {
+  depends_on = [
+    aws_lb_target_group.django,
+  ]
+
   lifecycle {
     ignore_changes = [
       task_definition,
