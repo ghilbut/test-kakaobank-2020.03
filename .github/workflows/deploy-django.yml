@@ -21,6 +21,47 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to AWS ECR 
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Pull docker image
+        run: docker pull ${IMAGE_NAME}:latest
+
+      - name: Logout AWS ECR
+        if: always()
+        run: docker logout ${{ steps.ecr.outputs.registry }}
+
+      - name: Deploy static files
+        env:
+          AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+        run: |
+          docker run \
+            -e SPPS_DB_NAME=x \
+            -e SPPS_DB_HOST=x \
+            -e SPPS_DB_PORT=x \
+            -e SPPS_DB_USER=x \
+            -e SPPS_DB_PASSWORD=x \
+            -v $(pwd)/static:/app/static \
+            --rm \
+            --user ${USER} \
+            ${REGISTRY}/docker:latest \
+            ./manage.py collectstatic --no-input --settings spps.settings.prod
+          aws s3 sync $(pwd)/static s3://spps.ghilbut.net/static
+
+
+
       - name: Run MySQL
         id:   mysql
         run:  |
