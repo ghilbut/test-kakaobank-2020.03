@@ -1,6 +1,8 @@
 # Seoul Public Parking Lots Service
 서울열린데이터 광장의 [**서울시 공영주차장 안내 정보**](http://data.seoul.go.kr/dataList/OA-13122/S/1/datasetView.do)를 활용해서 주차 가능한 주차장을 찾을 수 있는 서비스 구현
 
+2020.03.30 10:00 ~ 2020.04.05 23:59 작업 [[TAG: 2020.04.06](https://github.com/ghilbut/seoul-public-parking-lot-service/tree/2020.04.06)]
+
 - 서비스 URL: https://spps.ghilbut.net/
 - API URL: https://spps-api.ghilbut.net/parking_lots/
 - API 문서
