@@ -17,7 +17,7 @@ import { mapState } from 'vuex';
 })
 export default class Paginator extends Vue {
   page: number = 1
-  pageVisible: number = 7;
+  pageVisible: number = 10;
 
   mounted() {
     this.$on('reset', this.reset);
