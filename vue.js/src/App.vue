@@ -3,12 +3,22 @@
     <v-app-bar app color="primary" dark>
 
       <v-spacer></v-spacer>
-        <Search ref="search" @keyword-changed="onKeyword" />
+        <Search
+          ref="search"
+          @keyword-changed="onKeyword"
+          @settings-visible="onSettingsVisible"
+        />
       <v-spacer></v-spacer>
 
     </v-app-bar>
 
     <v-content>
+      <Settings
+        ref="settings"
+        @apply="onSettingsApply"
+        @cancel="onSettingsCancel"
+      />
+
       <router-view />
     </v-content>
 
@@ -23,12 +33,14 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
+import Settings from '@/components/Settings.vue'
 import Search from '@/components/Search.vue'
 import Paginator from '@/components/Paginator.vue'
 
 @Component({
   name: 'App',
   components: {
+    Settings,
     Search,
     Paginator
   }
@@ -36,13 +48,44 @@ import Paginator from '@/components/Paginator.vue'
 export default class App extends Vue {
 
   $refs: any = {
-    search: Search,
-    list:   undefined,
-    page:   Paginator
+    settings: Settings,
+    search:   Search,
+    list:     undefined,
+    page:     Paginator
   };
 
-  keyword: string = '';
-  page: number    = 1;
+  sort: string = 'price'
+  sortPrice: number = 1;
+  keyword: string  = '';
+  page: number  = 1;
+
+  reset() {
+    const params = {
+      sort: this.sort,
+      sortPrice: this.sortPrice,
+      keyword: this.keyword,
+      page: this.page,
+    }
+    this.$store.dispatch('reset', params);
+  }
+
+  onSettingsVisible() {
+    this.$refs.settings.sort = this.sort;
+    this.$refs.settings.sortPrice = this.sortPrice;
+    this.$refs.settings.show();
+  }
+
+  onSettingsApply({ sort, sortPrice }:{ sort: string, sortPrice: number }) {
+    console.log(sort, sortPrice);
+    this.sort = sort;
+    this.sortPrice = sortPrice;
+    this.$refs.settings.hide();
+    this.reset();
+  }
+
+  onSettingsCancel() {
+    this.$refs.settings.hide();
+  }
 
   onKeyword(keyword: string) {
     if (this.keyword === keyword) {
@@ -52,12 +95,12 @@ export default class App extends Vue {
     this.keyword = keyword;
     this.page = 1;
     this.$refs.page.reset();
-    this.$store.dispatch('reset', { keyword , page: this.page });
+    this.reset();
   }
 
   onPage(page: number) {
     this.page = page;
-    this.$store.dispatch('reset', { keyword: this.keyword, page });
+    this.reset();
   }
 }
 </script>
