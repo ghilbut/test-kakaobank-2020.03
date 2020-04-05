@@ -58,7 +58,7 @@ jobs:
             -v $(pwd)/static:/app/static \
             --rm \
             --user ${USER} \
-            ${REGISTRY}/docker:latest \
+            ${REGISTRY}/django:latest \
             ./manage.py collectstatic --no-input --settings spps.settings.prod
           aws s3 sync $(pwd)/static s3://spps.ghilbut.net/static
 
