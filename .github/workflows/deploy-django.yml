@@ -60,6 +60,7 @@ jobs:
             ${REGISTRY}/django:latest \
             ./manage.py collectstatic --no-input --settings spps.settings.prod
           aws s3 sync $(pwd)/static s3://spps.ghilbut.net/static
+        working-directory: ${{ env.WORKDIR }}
 
 
 
