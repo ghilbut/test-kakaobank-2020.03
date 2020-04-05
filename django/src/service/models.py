@@ -9,7 +9,7 @@ class ParkingLotModel(models.Model):
   code        = models.PositiveIntegerField(primary_key=True)
   name        = models.CharField(db_index=True, max_length=128)
   address     = models.CharField(db_index=True, max_length=512)
-  phone_num   = models.CharField(db_index=True, max_length=64)
+  phone_num   = models.CharField(db_index=True, max_length=128)
   json_string = models.TextField()
   crc32       = models.PositiveIntegerField()
   version     = models.CharField(db_index=True, max_length=32)

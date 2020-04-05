@@ -1,9 +1,10 @@
-name: Deploy django to develop stage
+name: Deploy django application
 
 on:
   push:
     branches:
       - master
+      - Issue-*
     paths:
       - .github/workflows/deploy-django.yml
       - django/Dockerfile
@@ -138,6 +139,8 @@ jobs:
     needs:
       - build
     runs-on: ubuntu-18.04
+    env:
+      WORKDIR: ./django
 
     steps:
       - uses: actions/checkout@v2
@@ -146,10 +149,12 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: docker_name
+
       - name: Download docker tag
         uses: actions/download-artifact@v1
         with:
           name: docker_tag
+
       - name: Get docker image name and tag to publish
         id: docker
         run: |
@@ -179,6 +184,26 @@ jobs:
       - name: Logout AWS ECR
         if: always()
         run: docker logout ${{ steps.ecr.outputs.registry }}
+
+      - name: Deploy static files
+        run: |
+          install -d -m 0777 ./static
+          docker run \
+            -e SPPS_DB_NAME=x \
+            -e SPPS_DB_HOST=x \
+            -e SPPS_DB_PORT=x \
+            -e SPPS_DB_USER=x \
+            -e SPPS_DB_PASSWORD=x \
+            -v $(pwd)/static:/app/static \
+            --rm \
+            ${IMAGE_NAME}:${IMAGE_TAG} \
+            ./manage.py collectstatic --no-input --settings spps.settings.prod
+          aws s3 sync $(pwd)/static s3://spps.ghilbut.net/static
+        env:
+          AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          IMAGE_NAME: ${{ steps.docker.outputs.name }}
+          IMAGE_TAG:  ${{ steps.docker.outputs.tag }}
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def

@@ -1,7 +1,7 @@
 from spps.settings.local import *
 
 
-DEBUG = True
+DEBUG = False
 
 
 ALLOWED_HOSTS = [
@@ -25,3 +25,7 @@ DATABASES = {
     'CONN_MAX_AGE': 60,
   }
 }
+
+
+STATIC_ROOT = os.path.abspath(os.path.join(BASE_DIR, '../static'))
+STATIC_URL = 'https://spps.ghilbut.net/static/'

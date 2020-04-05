@@ -1,0 +1,6 @@
+.env
+.gitignore
+db
+docker-compose.yml
+ecs
+static

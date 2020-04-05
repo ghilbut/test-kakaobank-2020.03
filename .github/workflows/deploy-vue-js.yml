@@ -1,4 +1,4 @@
-name: Deploy vue.js projet
+name: Deploy vue.js applcation
 
 on:
   push:
@@ -45,5 +45,6 @@ jobs:
       run: |
         aws s3 sync \
           --acl public-read \
+          --exclude static/** \
           ./dist s3://spps.ghilbut.net
       working-directory: ${{ env.WORKDIR }}
