@@ -214,8 +214,8 @@ jobs:
             -e SPPS_DB_PORT=x \
             -e SPPS_DB_USER=x \
             -e SPPS_DB_PASSWORD=x \
-            -v `pwd`/static:/app/static \
+            -v $(pwd)/static:/app/static \
             --rm \
             ${IMAGE_NAME}:${IMAGE_TAG} \
             ./manage.py collectstatic --no-input --settings spps.settings.prod
-          aws s3 sync `pwd`/static s3://spps.ghilbut.net/static
+          aws s3 sync $(pwd)/static s3://spps.ghilbut.net/static
