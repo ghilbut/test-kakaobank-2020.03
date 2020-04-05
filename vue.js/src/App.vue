@@ -59,7 +59,7 @@ export default class App extends Vue {
   keyword: string  = '';
   page: number  = 1;
 
-  query() {
+  reset() {
     const params = {
       sort: this.sort,
       sortPrice: this.sortPrice,
@@ -80,6 +80,7 @@ export default class App extends Vue {
     this.sort = sort;
     this.sortPrice = sortPrice;
     this.$refs.settings.hide();
+    this.reset();
   }
 
   onSettingsCancel() {
@@ -94,12 +95,12 @@ export default class App extends Vue {
     this.keyword = keyword;
     this.page = 1;
     this.$refs.page.reset();
-    this.query();
+    this.reset();
   }
 
   onPage(page: number) {
     this.page = page;
-    this.query();
+    this.reset();
   }
 }
 </script>
