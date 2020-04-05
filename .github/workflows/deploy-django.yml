@@ -49,6 +49,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           REGISTRY: ${{ steps.ecr.outputs.registry }}
         run: |
+          mkdir ./static
           docker run \
             -e SPPS_DB_NAME=x \
             -e SPPS_DB_HOST=x \
