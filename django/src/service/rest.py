@@ -1,5 +1,9 @@
 import json
-from django.db.models import Q
+from django.db.models import (
+  F,
+  Func,
+  Q,
+)
 from django.utils.decorators import method_decorator
 from drf_yasg.openapi import (
   IN_PATH,
@@ -89,11 +93,70 @@ class ParkingLotModelViewSet(ReadOnlyModelViewSet):
       q.add(Q(phone_num__contains=key), q.OR)
       q.add(Q(name__contains=key),      q.OR)
 
-    # 1시간 기준 저렴한 금액순
-    query = query.filter(price__time=1)
-    query = query.order_by('price__price')
+    sort = self.request.query_params.get('sort')
+    time = int(self.request.query_params.get('sortPrice', 1))
+    lat = self.request.query_params.get('lat')
+    lng = self.request.query_params.get('lng')
 
+    if sort == 'distance':
+      o = self._query_order_by_position(query, lat, lng)
+    else:
+      o = self._query_order_by_price(query, time)
+    query = o
     query = query.filter(q)
+    return query
+
+  @staticmethod
+  def _query_order_by_position(query, lat, lng):
+    if lat == None or lng == None:
+      return None
+
+    # TODO(ghilbut): check lat and lng validation 
+
+    """
+    SELECT
+      code, (
+        6371 * acos (
+        cos ( radians(37.35224320) )
+        * cos( radians( lat ) )
+        * cos( radians( lng ) - radians(127.11034880) )
+        + sin ( radians(37.35224320) )
+        * sin( radians( lat ) )
+      )
+    ) AS distance
+    FROM spps_parking_lots
+    ORDER BY distance
+    LIMIT 0 , 20;
+    """
+
+    lat = float(lat)
+    lng = float(lng)
+
+    class Sin(Func):
+      function = 'SIN'
+    class Cos(Func):
+      function = 'COS'
+    class Acos(Func):
+      function = 'ACOS'
+    class Radians(Func):
+      function = 'RADIANS'
+
+    rlat = Radians(lat)
+    rlng = Radians(lng)
+    rflat = Radians(F('lat'))
+    rflng = Radians(F('lng'))
+
+    exp = 3959.0 * Acos(Cos(rlat) * Cos(rflat) * 
+                        Cos(rflng - rlng) + 
+                        Sin(rlat) * 
+                        Sin(rflat))
+    query = query.annotate(distance=exp).order_by('distance')
+    return query
+
+  @staticmethod
+  def _query_order_by_price(query, time):
+    query = query.filter(price__time=time)
+    query = query.order_by('price__price')
     return query
 
 

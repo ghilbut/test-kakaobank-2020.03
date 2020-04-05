@@ -33,6 +33,12 @@
           <v-radio label="하루" value="0"></v-radio>
           <v-radio label="월정액" value="-1"></v-radio>
         </v-radio-group>
+
+        <div>
+          <span><b>기준위치: &nbsp&nbsp&nbsp</b></span>
+          Latitude: {{ lat }} /
+          Longitude: {{ lng }}
+        </div>
       </v-card-text>
 
       <v-divider></v-divider>
@@ -55,6 +61,8 @@ export default class Settings extends Vue {
   visible: boolean = false;
   sort: string = 'price';
   sortPrice: number = 1;
+  lat: string = 'Unknown';
+  lng: string = 'Unknown';
 
   show() {
     this.visible = true;
@@ -65,11 +73,38 @@ export default class Settings extends Vue {
   }
 
   onApply() {
-    this.$emit('apply', { 'sort': this.sort, 'sortPrice': this.sortPrice });
+    const params = {
+      sort: this.sort,
+      sortPrice: this.sortPrice,
+      lat: this.lat,
+      lng: this.lng
+    };
+    this.$emit('apply', params);
   }
 
   onCancel() {
     this.$emit('cancel', '');
+  }
+
+  @Watch('sort')
+  async onSortChanged(val: string, oldVal: string) {
+    this.lat = this.lng = 'Unkown';
+    if (val == 'distance') {
+      const { lat, lng }:any = await this.getPoint();
+      this.lat = lat.toFixed(8);
+      this.lng = lng.toFixed(8);
+    }
+  }
+
+  getPoint() {
+    return new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition((pos) => {
+        resolve({
+          'lat': pos.coords.latitude,
+          'lng': pos.coords.longitude
+        });
+      });
+    });
   }
 }
 </script>

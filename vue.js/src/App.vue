@@ -56,6 +56,8 @@ export default class App extends Vue {
 
   sort: string = 'price'
   sortPrice: number = 1;
+  lat: string = 'Unknown';
+  lng: string = ' Unknown';
   keyword: string  = '';
   page: number  = 1;
 
@@ -63,8 +65,10 @@ export default class App extends Vue {
     const params = {
       sort: this.sort,
       sortPrice: this.sortPrice,
+      lat: this.lat,
+      lng: this.lng,
       keyword: this.keyword,
-      page: this.page,
+      page: this.page
     }
     this.$store.dispatch('reset', params);
   }
@@ -72,13 +76,16 @@ export default class App extends Vue {
   onSettingsVisible() {
     this.$refs.settings.sort = this.sort;
     this.$refs.settings.sortPrice = this.sortPrice;
+    this.$refs.settings.lat = this.lat;
+    this.$refs.settings.lng = this.lng;
     this.$refs.settings.show();
   }
 
-  onSettingsApply({ sort, sortPrice }:{ sort: string, sortPrice: number }) {
-    console.log(sort, sortPrice);
+  onSettingsApply({ sort, sortPrice, lat, lng }:{ sort: string, sortPrice: number, lat: string, lng: string }) {
     this.sort = sort;
     this.sortPrice = sortPrice;
+    this.lat = lat;
+    this.lng = lng;
     this.$refs.settings.hide();
     this.reset();
   }

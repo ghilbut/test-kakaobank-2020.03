@@ -26,7 +26,8 @@ class Command(BaseCommand):
     now = datetime.utcnow()
     ver = str(KST.localize(now))
 
-    while True:
+    loop = True
+    while loop:
       print(f'BEGIN({begin}) - END({end})')
 
       url = f'http://openapi.seoul.go.kr:8088/{key}/json/GetParkInfo/{begin}/{end}/'
@@ -44,9 +45,7 @@ class Command(BaseCommand):
 
       break  # temp for test
 
-      if end == total:
-        break
-
+      loop  = (end < total)
       begin = end + 1
       end   = min(total, end + steps)
 
@@ -90,6 +89,8 @@ def _update_parking_lots(parking_lots: list, now: datetime, version: str) -> Non
       row.name = item['PARKING_NAME']
       row.address = item['ADDR']
       row.phone_num = _regulate_phone_number(item['TEL'])
+      row.lat = item['LAT']
+      row.lng = item['LNG']
       row.json_string = json_string
       row.crc32 = crc32
       if update_fields != None:

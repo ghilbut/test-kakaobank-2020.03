@@ -19,14 +19,14 @@ export default new Vuex.Store({
     }
   },
   actions: {
-    async reset({ commit }, { sort, sortPrice, keyword, page }) {
+    async reset({ commit }, { sort, sortPrice, lat, lng, keyword, page }) {
       try {
         let uri = `${process.env.VUE_APP_DJANGO_URI}/parking_lots/?size=${PageSize}`;
-        if (sort && sort === 'distance') {
-          uri += `&sort=${sort}`;
-        }
         if (sort == 'price' && sortPrice !== 1) {
           uri += `&sortPrice=${sortPrice}`;
+        }
+        if (sort === 'distance' && !isNaN(lat) && !isNaN(lng)) {
+          uri += `&sort=${sort}&lat=${lat}&lng=${lng}`;
         }
         if (keyword) {
           uri += `&q=${keyword}`;
