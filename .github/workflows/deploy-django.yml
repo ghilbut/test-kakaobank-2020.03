@@ -35,7 +35,9 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Pull docker image
-        run: docker pull ${IMAGE_NAME}:latest
+        run: docker pull ${REGISTRY}/docker:latest 
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
 
       - name: Logout AWS ECR
         if: always()
