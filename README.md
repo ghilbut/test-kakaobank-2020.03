@@ -43,7 +43,7 @@ $ pipenv run ./src/manage.py migrate
 $ pipenv run ./src/manage.py createsuperuser
 
 # run unit test
-$ pipenv run ./src/manage.py test
+$ pipenv run ./src/manage.py test ./src
 
 # run local development server
 $ pipenv run ./src/manage.py runserver 0:8000

@@ -1,7 +1,9 @@
 import binascii
 import json
+import logging
 import os
 import requests
+import time
 from datetime import datetime
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -12,13 +14,17 @@ from service.models import (
 )
 
 
+logger = logging.getLogger('Crawler')
+
+
 class Command(BaseCommand):
   help = 'Crawling informations of Seoul public parking lots'
 
   def handle(self, *args, **options):
+    logger.info('Crawler is staring')
     key = os.environ['OPEN_API_KEY']
 
-    steps = 100  # 1000
+    steps = 1000
     begin = 1
     end   = steps
 
@@ -26,50 +32,62 @@ class Command(BaseCommand):
     now = datetime.utcnow()
     ver = str(KST.localize(now))
 
+    failed = 0
+    updated = 0
+
     loop = True
     while loop:
-      print(f'BEGIN({begin}) - END({end})')
-
+      logger.info(f'Crawler will parse from offset:{begin} to offset:{end}')
       url = f'http://openapi.seoul.go.kr:8088/{key}/json/GetParkInfo/{begin}/{end}/'
+      logger.info(f'Crawler request to "{url}"')
       res = requests.get(url)
       obj = res.json()
 
-      r = obj['GetParkInfo']['RESULT']
-      _assert_result(r)
+      try:
+        r = obj['GetParkInfo']['RESULT']
+        failed = 0
+      except KeyError:
+        code = obj['RESULT']['CODE']
+        msg = obj['RESULT']['MESSAGE']
+        logger.error(f'There is not GetParkInfo field - [{code}] {msg}')
+        ++failed
+        if failed > 4:
+          logger.critical('')
+          os.exit(1)
+        logger.info('Wait 10 seconds')
+        time.sleep(10)
+        continue
 
       total = obj['GetParkInfo']['list_total_count']
       row   = obj['GetParkInfo']['row']
       end   = begin + len(row) - 1
+      logger.info(f'Crawler get {len(row)} out of {total} items')
 
-      _update_parking_lots(row, now, ver)
-
-      break  # temp for test
+      updated += _update_parking_lots(row, now, ver)
 
       loop  = (end < total)
       begin = end + 1
       end   = min(total, end + steps)
+    logger.info(f'Crawling is completed with {updated} items')
 
     n = ParkingLotModel.objects.exclude(version=ver).delete()
     n = n[1].get('service.ParkingLotModel', 0)
-    print(f'ParkingLotModel: {n} rows are deleted')
-
-
-def _assert_result(result: dict) -> None:
-  c = result['CODE']
-  m = result['MESSAGE']
-  assert c == 'INFO-000', f'[CODE: {c}] {m}'
+    logger.info(f'Crawler delete {n} rows')
 
 
 @transaction.atomic
 def _update_parking_lots(parking_lots: list, now: datetime, version: str) -> None:
   code_list = {item['PARKING_CODE'] for item in parking_lots}
   code_list = list(code_list)
+  logger.info(f'There are {len(code_list)} unique items in total {len(parking_lots)} items')
 
   rows = ParkingLotModel.objects.filter(code__in=code_list)
   rows = {row.code:row for row in rows}
 
   weekday = now.weekday()
   holiday = False  #48 공공데이터포털의 API가 동작하지 않아 휴일을 구분할 수 없다.
+
+  updated = 0
 
   for item in parking_lots:
     code = int(item['PARKING_CODE'])
@@ -95,11 +113,14 @@ def _update_parking_lots(parking_lots: list, now: datetime, version: str) -> Non
       row.crc32 = crc32
       if update_fields != None:
         update_fields += ['name', 'address', 'phone_num', 'json_string', 'crc32']
+      ++updated
     row.version = version
     row.save(update_fields=update_fields)
 
     prices = _calc_time_pricing_table(code, item, weekday, holiday)
     for time, price in enumerate(prices, -1):
+      if price < 0 or 2147483647 < price:
+        logger.critical(f'{row.name}`s price({price}) is out of range on {time} time')
       # -1: 월정액
       #  0: 일 최대요금
       #. 1: 1시간 요금
@@ -113,6 +134,8 @@ def _update_parking_lots(parking_lots: list, now: datetime, version: str) -> Non
           'price': price,
         }
       )
+
+  return updated
 
 
 def _regulate_phone_number(tel: str) -> str:
@@ -140,7 +163,7 @@ def _calc_time_pricing_table(code: int, item: dict, weekday: int, holiday: bool)
   else:
     retval.append(_price_per_day(item, weekday, holiday))
     for hour in range(1, 5):
-      retval.append(_price_per_hour(item, hour))
+      retval.append(_price_per_hours(item, hour))
   return retval
 
 
@@ -169,14 +192,14 @@ def _price_per_day(item: dict, weekday: int, holiday: bool) -> int:
     begin = to_minute(item['WEEKDAY_BEGIN_TIME'])
     end   = to_minute(item['WEEKDAY_END_TIME'])
 
-  return _price_per_minute(item, (0 if begin < end else 24*60) - begin + end)
+  return _price_per_minutes(item, (0 if begin < end else 24*60) - begin + end)
 
 
-def _price_per_hour(item: dict, hours: int) -> int:
-  return _price_per_minute(item, hours * 60)
+def _price_per_hours(item: dict, hours: int) -> int:
+  return _price_per_minutes(item, hours * 60)
 
 
-def _price_per_minute(item: dict, minutes: int) -> int:
+def _price_per_minutes(item: dict, minutes: int) -> int:
   base_price = int(item['RATES'])
   base_time_rate = int(item['TIME_RATE'])
   extra_price = int(item['ADD_RATES'])
@@ -185,5 +208,6 @@ def _price_per_minute(item: dict, minutes: int) -> int:
   price = base_price
   if extra_price > 0:
     extra_time = minutes - base_time_rate
-    price += int(extra_time / extra_time_rate) * extra_price
+    if extra_time > 0:
+      price += int(extra_time / extra_time_rate) * extra_price
   return price

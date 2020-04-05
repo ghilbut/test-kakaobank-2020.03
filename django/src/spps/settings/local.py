@@ -146,6 +146,35 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
+        'spps': {
+            'format': u"%(asctime)s [%(levelname)s] %(message)s",
+            'datefmt': "%Y-%m-%d %H:%M:%S",
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'spps',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
+    'loggers': {
+      'Crawler': {
+        'hanlders': [
+          'console',
+        ],
+        'level': 'DEBUG',
+      },
+    }
+}
+
+DISABLED_LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
         'db': {
             'format': u"%(asctime)s [%(levelname)s] [QUERY] %(message)s",
             'datefmt': "%Y-%m-%d %H:%M:%S",
