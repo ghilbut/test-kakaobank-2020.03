@@ -198,12 +198,12 @@ jobs:
             --rm \
             ${IMAGE_NAME}:${IMAGE_TAG} \
             ./manage.py collectstatic --no-input --settings spps.settings.prod
+          aws s3 sync $(pwd)/static s3://spps.ghilbut.net/static
         env:
           AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           IMAGE_NAME: ${{ steps.docker.outputs.name }}
           IMAGE_TAG:  ${{ steps.docker.outputs.tag }}
-          aws s3 sync $(pwd)/static s3://spps.ghilbut.net/static
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
