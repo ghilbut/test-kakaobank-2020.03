@@ -189,7 +189,7 @@ $ terraform destroy
 # WORKSPACE: ${repodir}/vue.js
 
 $ yarn install
-$ yarn build --force
+$ yarn build --mode prod
 $ aws --profile spps s3 sync --acl public-read ./dist s3://spps.ghilbut.net
 ```
 
