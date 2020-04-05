@@ -35,7 +35,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Pull docker image
-        run: docker pull ${REGISTRY}/docker:latest 
+        run: docker pull ${REGISTRY}/django:latest 
         env:
           REGISTRY: ${{ steps.ecr.outputs.registry }}
 
