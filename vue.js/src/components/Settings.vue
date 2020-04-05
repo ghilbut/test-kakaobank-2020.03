@@ -61,8 +61,8 @@ export default class Settings extends Vue {
   visible: boolean = false;
   sort: string = 'price';
   sortPrice: number = 1;
-  lat: string = 'Unknown';
-  lng: string = 'Unknown';
+  lat: number = 0;
+  lng: number = 0;
 
   show() {
     this.visible = true;
@@ -73,38 +73,12 @@ export default class Settings extends Vue {
   }
 
   onApply() {
-    const params = {
-      sort: this.sort,
-      sortPrice: this.sortPrice,
-      lat: this.lat,
-      lng: this.lng
-    };
+    const params = { sort: this.sort, sortPrice: this.sortPrice };
     this.$emit('apply', params);
   }
 
   onCancel() {
-    this.$emit('cancel', '');
-  }
-
-  @Watch('sort')
-  async onSortChanged(val: string, oldVal: string) {
-    this.lat = this.lng = 'Unkown';
-    if (val == 'distance') {
-      const { lat, lng }:any = await this.getPoint();
-      this.lat = lat.toFixed(8);
-      this.lng = lng.toFixed(8);
-    }
-  }
-
-  getPoint() {
-    return new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition((pos) => {
-        resolve({
-          'lat': pos.coords.latitude,
-          'lng': pos.coords.longitude
-        });
-      });
-    });
+    this.$emit('cancel');
   }
 }
 </script>

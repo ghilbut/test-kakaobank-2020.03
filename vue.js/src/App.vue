@@ -18,8 +18,8 @@
         @apply="onSettingsApply"
         @cancel="onSettingsCancel"
       />
-
-      <router-view />
+      <HelloWorld />
+      <!--<router-view />-->
     </v-content>
 
     <v-footer class="font-weight-medium" app>
@@ -35,6 +35,7 @@
 import { Component, Vue } from 'vue-property-decorator'
 import Settings from '@/components/Settings.vue'
 import Search from '@/components/Search.vue'
+import HelloWorld from '@/components/HelloWorld.vue'
 import Paginator from '@/components/Paginator.vue'
 
 @Component({
@@ -42,6 +43,7 @@ import Paginator from '@/components/Paginator.vue'
   components: {
     Settings,
     Search,
+    HelloWorld,
     Paginator
   }
 })
@@ -50,14 +52,14 @@ export default class App extends Vue {
   $refs: any = {
     settings: Settings,
     search:   Search,
-    list:     undefined,
+    list:     HelloWorld,
     page:     Paginator
   };
 
   sort: string = 'price'
   sortPrice: number = 1;
-  lat: string = 'Unknown';
-  lng: string = ' Unknown';
+  lat: number = 0;
+  lng: number = 0;
   keyword: string  = '';
   page: number  = 1;
 
@@ -73,6 +75,19 @@ export default class App extends Vue {
     this.$store.dispatch('reset', params);
   }
 
+  async mounted() {
+    const self = this;
+    getPoint().then(({ lat, lng }) => {
+      self.lat = lat;
+      self.lng = lng;
+      self.$refs.settings.lat = lat;
+      self.$refs.settings.lng = lng;
+      self.$refs.list.lat = lat;
+      self.$refs.list.lng = lng;
+    });
+    this.reset();
+  };
+
   onSettingsVisible() {
     this.$refs.settings.sort = this.sort;
     this.$refs.settings.sortPrice = this.sortPrice;
@@ -81,11 +96,9 @@ export default class App extends Vue {
     this.$refs.settings.show();
   }
 
-  onSettingsApply({ sort, sortPrice, lat, lng }:{ sort: string, sortPrice: number, lat: string, lng: string }) {
+  onSettingsApply({ sort, sortPrice }:{ sort: string, sortPrice: number }) {
     this.sort = sort;
     this.sortPrice = sortPrice;
-    this.lat = lat;
-    this.lng = lng;
     this.$refs.settings.hide();
     this.reset();
   }
@@ -109,5 +122,21 @@ export default class App extends Vue {
     this.page = page;
     this.reset();
   }
+}
+
+function getPoint(): Promise<{ lat: number, lng: number }> {
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        resolve({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude
+        });
+      },
+      (err) => {
+        console.log('getPoint Error', err);
+      }
+    );
+  });
 }
 </script>
