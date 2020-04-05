@@ -146,10 +146,8 @@ class ParkingLotModelViewSet(ReadOnlyModelViewSet):
     rflat = Radians(F('lat'))
     rflng = Radians(F('lng'))
 
-    exp = 3959.0 * Acos(Cos(rlat) * Cos(rflat) * 
-                        Cos(rflng - rlng) + 
-                        Sin(rlat) * 
-                        Sin(rflat))
+    exp = 3959.0 * Acos(Sin(rlat) * Sin(rflat) +
+                        Cos(rlat) * Cos(rflat) * Cos(rflng - rlng))
     query = query.annotate(distance=exp).order_by('distance')
     return query
 
