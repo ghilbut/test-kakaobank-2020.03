@@ -1,6 +1,6 @@
 import json
 import unittest
-from django import test
+from django.test import TestCase
 from django.test import tag
 from .crawling import (
   _price_per_hours,
@@ -42,10 +42,12 @@ class CrawlingUnitTestCase(unittest.TestCase):
       self.assertEqual(price, expected[hour-1])
 
 
+'''
 @tag('integration')
-class CrawlingIntegrationTestCase(test.TestCase):
+class CrawlingIntegrationTestCase(TestCase):
   def setUp(self):
     pass
 
   def test(self):
     pass
+'''

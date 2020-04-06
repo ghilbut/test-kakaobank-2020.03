@@ -3,6 +3,7 @@ from django.db.models import (
   F,
   Func,
   Q,
+  Min,
 )
 from django.utils.decorators import method_decorator
 from drf_yasg.openapi import (
@@ -10,6 +11,7 @@ from drf_yasg.openapi import (
   IN_QUERY,
   Parameter,
   TYPE_INTEGER,
+  TYPE_NUMBER,
   TYPE_STRING,
 )
 from drf_yasg.utils import swagger_auto_schema
@@ -17,6 +19,8 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.routers import DefaultRouter
 from rest_framework.serializers import (
   CharField,
+  FloatField,
+  Serializer,
   Serializer,
 )
 from rest_framework.status import HTTP_404_NOT_FOUND
@@ -25,8 +29,18 @@ from .models import ParkingLotModel
 
 
 class ParkingLotModelSerializer(Serializer):
+  target_price = FloatField(read_only=True, required=False)
+  distance = FloatField(read_only=True, required=False)
+
   def to_representation(self, value: ParkingLotModel) -> dict:
-    return json.loads(value.json_string)
+    v = json.loads(value.json_string)
+    v['price'] = value.target_price
+    v['distance'] =int( value.distance * 10) / 10
+    return v
+
+  #class Meta:
+  #  model = ParkingLotModel
+  #  fields = ['json_string', 'target_price', 'distance']
 
 
 class ErrorSerializer(Serializer):
@@ -45,6 +59,39 @@ class ParkingLotModelPagination(PageNumberPagination):
   name = 'list',
   decorator = swagger_auto_schema(
     manual_parameters = [
+      Parameter(
+        'sort', IN_QUERY,
+        description = '''우선 정렬기준을 지정한다.
+값이 없거나 유효한 값이 아니면 price 우선 옵션으로 동작한다.
+''',
+        required = False,
+        type = TYPE_STRING,
+        enum = [
+          'price',
+          'distance',
+        ],
+      ),
+      Parameter(
+        'sortPrice', IN_QUERY,
+        description = '''가격정렬 기준을 지정한다.
+1시간(1), 2시간(2), 3시간(3), 4시간(4), 하루(0), 월정액(-1)을 선택할 수 있다.
+''',
+        required = False,
+        type = TYPE_INTEGER,
+        enum = [-1, 0, 1, 2, 3, 4],
+      ),
+      Parameter(
+        'lat', IN_QUERY,
+        description = '거리정렬에 사용되는 사용자의 현재 Latitude 값이다.',
+        required = False,
+        type = TYPE_NUMBER,
+      ),
+      Parameter(
+        'lng', IN_QUERY,
+        description = '거리정렬에 사용되는 사용자의 현재 Longitude 값이다.',
+        required = False,
+        type = TYPE_NUMBER,
+      ),
       Parameter(
         'q', IN_QUERY,
         description = '검색을 위한 키워드 (주차장 이름과 주소, 전화번호가 대상이다)',
@@ -83,7 +130,7 @@ class ParkingLotModelViewSet(ReadOnlyModelViewSet):
   pagination_class = ParkingLotModelPagination
 
   def get_queryset(self):
-    query = self.queryset.distinct()
+    query = self.queryset
     q = Q()
 
     # 키워드 검색
@@ -98,20 +145,8 @@ class ParkingLotModelViewSet(ReadOnlyModelViewSet):
     lat = self.request.query_params.get('lat')
     lng = self.request.query_params.get('lng')
 
-    if sort == 'distance':
-      o = self._query_order_by_position(query, lat, lng)
-    else:
-      o = self._query_order_by_price(query, time)
-    query = o
     query = query.filter(q)
-    return query
-
-  @staticmethod
-  def _query_order_by_position(query, lat, lng):
-    if lat == None or lng == None:
-      return None
-
-    # TODO(ghilbut): check lat and lng validation 
+    query = query.filter(price__time=time).annotate(target_price=Min('price__price'))
 
     """
     SELECT
@@ -146,16 +181,14 @@ class ParkingLotModelViewSet(ReadOnlyModelViewSet):
     rflat = Radians(F('lat'))
     rflng = Radians(F('lng'))
 
-    exp = 3959.0 * Acos(Sin(rlat) * Sin(rflat) +
-                        Cos(rlat) * Cos(rflat) * Cos(rflng - rlng))
-    query = query.annotate(distance=exp).order_by('distance')
-    return query
+    exp = 6371 * Acos(Sin(rlat) * Sin(rflat) +
+                      Cos(rlat) * Cos(rflat) * Cos(rflng - rlng))
+    query = query.annotate(distance=exp)
 
-  @staticmethod
-  def _query_order_by_price(query, time):
-    query = query.filter(price__time=time)
-    query = query.order_by('price__price')
-    return query
+    if sort == 'distance':
+      return query.order_by('distance', 'target_price')
+
+    return query.order_by('target_price', 'distance')
 
 
 router = DefaultRouter()

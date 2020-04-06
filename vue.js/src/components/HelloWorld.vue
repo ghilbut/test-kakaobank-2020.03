@@ -12,7 +12,8 @@
                 <th class="text-center" v-for="item in headers">
                   {{ item.text }}
                 </th>
-                <!-- <th class="text-center">거리</th> -->
+                <th class="text-center">가격</th>
+                <th class="text-center">거리</th>
             </tr>
             </thead>
             <tbody>
@@ -20,7 +21,8 @@
                 <td>{{ index + 1}}</td>
                 <td>{{ isParkable(item) ? 'Y' : 'N' }}</td>
                 <td v-for="target in headers">{{ item[target.value] }}</td>
-                <!-- <td>{{ distance(item) }}</td> -->
+                <td>{{ item.price }}</td>
+                <td>{{ item.distance }} KM</td>
               </tr>
             </tbody>
           </template>
@@ -73,29 +75,6 @@ export default class HelloWorld extends Vue {
       Number(item.WEEKDAY_END_TIME),
       now
     ) || isNightFree;
-  }
-
-  distance(item: any) {
-    let lat1 = this.lat;
-    let lat2 = item['LAT'];
-    const lng1 = this.lng;
-    const lng2 = item['LNG'];
-
-    if (lat1 == lat2 && lng1 == lng2) {
-      return 0;
-    }
-
-    const R = 6371.01;  // Radius of the earth in km
-    const P = Math.PI / 180;
-    const dlat = (lat2 - lat1) * P;
-    const dlng = (lng2 - lng1) * P;
-    lat1 = lat1 * P;
-    lat2 = lat2 * P;
-    const a = Math.sin(dlat/2) * Math.sin(dlat/2) +
-              Math.sin(dlng/2) * Math.sin(dlng/2) * Math.cos(lat1) * Math.cos(lat2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    const m = R * c;
-    return m;
   }
 }
 
