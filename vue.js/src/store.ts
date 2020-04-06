@@ -25,9 +25,7 @@ export default new Vuex.Store({
         if (sort == 'price' && sortPrice !== 1) {
           uri += `&sortPrice=${sortPrice}`;
         }
-        if (sort === 'distance' && !isNaN(lat) && !isNaN(lng)) {
-          uri += `&sort=${sort}&lat=${lat}&lng=${lng}`;
-        }
+        uri += `&sort=${sort}&lat=${lat}&lng=${lng}`;
         if (keyword) {
           uri += `&q=${keyword}`;
         }

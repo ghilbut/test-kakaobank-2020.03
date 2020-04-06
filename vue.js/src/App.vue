@@ -84,8 +84,8 @@ export default class App extends Vue {
       self.$refs.settings.lng = lng;
       self.$refs.list.lat = lat;
       self.$refs.list.lng = lng;
+      self.reset();
     });
-    this.reset();
   };
 
   onSettingsVisible() {
@@ -97,9 +97,11 @@ export default class App extends Vue {
   }
 
   onSettingsApply({ sort, sortPrice }:{ sort: string, sortPrice: number }) {
+    this.page = 1;
     this.sort = sort;
     this.sortPrice = sortPrice;
     this.$refs.settings.hide();
+    this.$refs.page.reset();
     this.reset();
   }
 
