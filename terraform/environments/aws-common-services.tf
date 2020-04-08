@@ -96,6 +96,9 @@ data aws_subnet default {
   vpc_id = data.aws_vpc.default.id
 }
 
+data aws_ip_ranges cloudfront {
+    services = ["cloudfront"]
+}
 
 resource aws_security_group www {
   name        = "${var.srv_name}-www"
@@ -107,6 +110,7 @@ resource aws_security_group www {
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
   }
 
   ingress {
@@ -114,6 +118,7 @@ resource aws_security_group www {
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
   }
 
   egress {

@@ -131,12 +131,38 @@ resource aws_lb_target_group django {
   name        = "alb-${var.srv_name}-django"
   port        = local.django_port
   protocol    = "HTTP"
-  vpc_id      = data.aws_vpc.default.id
   target_type = "ip"
+  vpc_id      = data.aws_vpc.default.id
 
   health_check {
     interval = 10
     path = "/healthz"
+  }
+}
+
+resource aws_lb_listener_rule django_from_cloudfront {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = local.alb_django_priority
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.django.arn
+  }
+
+  condition {
+    host_header {
+      values = [
+        aws_route53_record.cloudfront.fqdn,
+      ]
+    }
+  }
+
+  condition {
+    path_pattern {
+      values = [
+        "/admin*",
+      ]
+    }
   }
 }
 

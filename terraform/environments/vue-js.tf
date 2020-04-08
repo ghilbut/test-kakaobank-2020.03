@@ -77,6 +77,18 @@ resource aws_cloudfront_distribution www {
     }
   }
 
+  origin {
+    domain_name = aws_lb.alb.dns_name
+    origin_id   = aws_lb.alb.dns_name
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "http-only"
+      origin_ssl_protocols   = ["TLSv1.1", "TLSv1.2"]
+    }
+  }
+
   enabled             = true
   is_ipv6_enabled     = true
   default_root_object = "index.html"
@@ -87,7 +99,7 @@ resource aws_cloudfront_distribution www {
 
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods   = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD", "OPTIONS"]
     target_origin_id = aws_s3_bucket.www.id
 
     forwarded_values {
@@ -102,6 +114,26 @@ resource aws_cloudfront_distribution www {
     min_ttl                = 0
     default_ttl            = 0  # 3600
     max_ttl                = 0  # 86400
+  }
+
+  ordered_cache_behavior {
+    allowed_methods = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods  = ["GET", "HEAD", "OPTIONS"]
+    default_ttl     = 0
+
+    forwarded_values {
+      cookies {
+        forward = "all"
+      }
+      headers      = ["*"]
+      query_string = true
+    }
+
+    max_ttl         = 0
+    min_ttl         = 0
+    path_pattern    = "/admin*"
+    target_origin_id = aws_lb.alb.dns_name
+    viewer_protocol_policy = "redirect-to-https"
   }
 
   price_class = "PriceClass_200"
