@@ -178,7 +178,7 @@ resource aws_lb_listener_rule django {
   condition {
     host_header {
       values = [
-        aws_route53_record.django.name,
+        aws_route53_record.django.fqdn,
       ]
     }
   }
