@@ -69,7 +69,7 @@ jobs:
           SPPS_LOCAL_DB_HOST: mysql
 
       - name: Stop MySQL
-        if:   always() && steps.mysql.outputs.result == 0
+        if:   steps.mysql.outputs.result == 0
         run:  |
           docker stop mysql
           docker network rm mysql
