@@ -13,3 +13,7 @@ variable srv_name {
 variable domain_name {
   type = "string"
 }
+
+variable open_api_key {
+  type = "string"
+}
