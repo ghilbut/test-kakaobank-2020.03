@@ -1,0 +1,30 @@
+{
+  "family": "spps-django-cron",
+  "executionRoleArn": "arn:aws:iam::869061964712:role/spps-ecs-task-execution",
+  "networkMode": "awsvpc",
+  "containerDefinitions": [
+  {
+    "name": "django",
+    "image": "869061964712.dkr.ecr.ap-northeast-2.amazonaws.com/django:latest",
+    "essential": true,
+    "environment": [{"name":"DJANGO_SETTINGS_MODULE","value":"spps.settings.prod"}],
+    "secrets": [{"name":"SPPS_DB_HOST","valueFrom":"arn:aws:secretsmanager:ap-northeast-2:869061964712:secret:spps-mysql-host-uqCubf"},{"name":"SPPS_DB_PORT","valueFrom":"arn:aws:secretsmanager:ap-northeast-2:869061964712:secret:spps-mysql-port-DbsUMk"},{"name":"SPPS_DB_NAME","valueFrom":"arn:aws:secretsmanager:ap-northeast-2:869061964712:secret:spps-mysql-database-HfLL2k"},{"name":"SPPS_DB_USER","valueFrom":"arn:aws:secretsmanager:ap-northeast-2:869061964712:secret:spps-mysql-username-UrAe9f"},{"name":"SPPS_DB_PASSWORD","valueFrom":"arn:aws:secretsmanager:ap-northeast-2:869061964712:secret:spps-mysql-password-MsvAoM"},{"name":"OPEN_API_KEY","valueFrom":"arn:aws:secretsmanager:ap-northeast-2:869061964712:secret:spps-open-api-key-humVuY"}],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-region":          "ap-northeast-2",
+        "awslogs-group":           "spps-django-cron",
+        "awslogs-stream-prefix":   "spps",
+        "awslogs-datetime-format": "\\[%Y-%m-%d %H:%M:%S\\]"
+      }
+    }
+  }
+]
+,
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "256",
+  "memory": "512",
+  "tags": [{"key":"Name","value":"spps-django-cron"},{"key":"owner","value":"terraform"},{"key":"purpose","value":"kakaobank hiring test"},{"key":"service","value":"spps"}]
+}
